@@ -21,7 +21,10 @@ setup(name='tile-stitcher',
       include_package_data=True,
       zip_safe=False,
       install_requires=[
-          'click'
+          'click',
+          'rasterio',
+          'scipy',
+          'mercantile'
       ],
       extras_require={
           'test': ['pytest'],

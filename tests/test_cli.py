@@ -1,10 +1,9 @@
 from click.testing import CliRunner
 
-from riomucho.scripts.cli import cli
+from tile_stitcher.scripts.cli import cli
 
 
-def test_cli_count():
+def test_cli_exit2():
     runner = CliRunner()
-    result = runner.invoke(cli, ['3'])
-    assert result.exit_code == 0
-    assert result.output == "False\nFalse\nFalse\n"
+    result = runner.invoke(cli, ['hii'])
+    assert result.exit_code == 2
