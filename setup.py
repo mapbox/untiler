@@ -24,7 +24,7 @@ setup(name='tile-stitcher',
           'click'
       ],
       extras_require={
-          'test': ['pytest'],
+          'test': ['pytest', 'pytest-cov'],
       },
       entry_points="""
       [console_scripts]
