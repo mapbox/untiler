@@ -380,6 +380,7 @@ def test_find_zoom_tiles_floor(expectedTileList):
 
     tiler = stitch_util.TileUtils()
     superTiles = tiler.get_super_tiles(tiles, 13)
+
     zMaxtiles, zFloortiles = tiler.get_zoom_tiles(tiles, superTiles, superTiles[-1], 17)
 
     assert zMaxtiles.shape == (848, 3)

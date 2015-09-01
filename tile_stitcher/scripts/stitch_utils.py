@@ -74,11 +74,14 @@ class TileUtils:
         If the same, returns <array of zMax tiles>, False
         If different, returns <array of zMax tiles>, <array of zMaxCov tiles>
         """
+
         if subTiles.shape != superTiles.shape:
             raise ValueError("Input sub and super tiles must have the same shape")
 
         subTiles = subTiles[np.all(superTiles == tile, axis=1)]
         subTileMin, subTileMax = subTiles[:, 0].min(), subTiles[:, 0].max()
+
+
 
         if subTileMax < tilefloor:
             raise ValueError("No tiles found below that floor")
@@ -86,6 +89,7 @@ class TileUtils:
         for zMaxCov in range(subTileMax, max([subTileMin - 1, tilefloor - 1]), -1):
             if 4 ** (zMaxCov - tile[0]) == np.where(subTiles[:, 0] == zMaxCov)[0].shape[0]:
                 break
+
 
         if subTileMax != zMaxCov:
             return subTiles[np.where(subTiles[:, 0] == subTileMax)], subTiles[np.where(subTiles[:, 0] == zMaxCov)]

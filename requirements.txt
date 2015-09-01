@@ -1,2 +1,2 @@
 rasterio>=0.26
-scipy>=0.16
+Pillow>=2.9.0
