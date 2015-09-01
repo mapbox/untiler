@@ -5,7 +5,7 @@ import os, shutil, mercantile
 import numpy as np
 import rasterio as rio
 
-def setup_sample_1():
+def setup_sample_1(include=1):
     zooms = np.arange(6) + 14
 
     obj = {
