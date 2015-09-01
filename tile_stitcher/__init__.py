@@ -10,6 +10,7 @@ import numpy as np
 import rasterio
 from rasterio import Affine
 from multiprocessing import Pool
+from PIL import Image
 import tile_stitcher.scripts.stitch_utils as stitch_utils
 from rasterio.warp import reproject, RESAMPLING
 
@@ -138,6 +139,7 @@ def streaming_tile_worker(data):
                     log += '%s %s %s\n' % (z, x, y)
 
                     imdata = np.array(Image.open(path))
+
                     depth = imdata.shape[-1]
                     imdata = make_image_array(imdata, globalArgs['tileResolution'], depth)
 
@@ -155,6 +157,7 @@ def streaming_tile_worker(data):
                 log += '%s %s %s\n' % (z, x, y)
 
                 imdata = np.array(Image.open(path))
+
                 depth = imdata.shape[-1]
 
                 imdata = make_image_array(imdata, globalArgs['tileResolution'], depth)
