@@ -37,12 +37,17 @@ addons:
     - libgmp-dev
     - libmpfr-dev
 
+before_install:
+  - pip install -U pip
+  - pip install wheel
+
 install:
+  
   # Before installation, we'll run ``pip wheel``, this will build wheels for
   # anything that doesn't already have one on PyPI.
   # Scipy wheel building may time out without travis_wait, so we give it
   # special treatment.
-  - "travis_wait pip wheel '$(grep scipy requirements.txt)'"
+  - travis_wait pip wheel "$(grep scipy requirements.txt)"
   # Now the rest of the requirements. Scipy will already be done, and will
   # be skipped below.
   - "pip wheel -r requirements.txt"
