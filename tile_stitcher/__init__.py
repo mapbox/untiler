@@ -2,12 +2,11 @@
 
 from __future__ import with_statement
 from __future__ import print_function
-import tarfile, os, re, time
+import os, re
 
 import click
 import mercantile as merc
 import numpy as np
-from scipy import misc
 import rasterio
 from rasterio import Affine
 from multiprocessing import Pool
@@ -138,7 +137,7 @@ def streaming_tile_worker(data):
                     path = globalArgs['readTemplate'] % (z, x, y)
                     log += '%s %s %s\n' % (z, x, y)
 
-                    imdata = misc.imread(path)
+                    imdata = np.array(Image.open(path))
                     depth = imdata.shape[-1]
                     imdata = make_image_array(imdata, globalArgs['tileResolution'], depth)
 
@@ -155,7 +154,7 @@ def streaming_tile_worker(data):
                 path = globalArgs['readTemplate'] % (z, x, y)
                 log += '%s %s %s\n' % (z, x, y)
 
-                imdata = misc.imread(path)
+                imdata = np.array(Image.open(path))
                 depth = imdata.shape[-1]
 
                 imdata = make_image_array(imdata, globalArgs['tileResolution'], depth)
