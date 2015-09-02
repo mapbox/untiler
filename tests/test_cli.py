@@ -13,15 +13,15 @@ def setup_sample_1(include=1):
     }
 
     try:
-        shutil.rmtree('/tmp/test-tile-stitcher')
+        shutil.rmtree('/tmp/test-untiler')
     except:
         pass
 
-    basepath = '/tmp/test-tile-stitcher/jpg'
+    basepath = '/tmp/test-untiler/jpg'
 
-    os.mkdir('/tmp/test-tile-stitcher')
+    os.mkdir('/tmp/test-untiler')
 
-    os.mkdir('/tmp/test-tile-stitcher/jpg')
+    os.mkdir('/tmp/test-untiler/jpg')
 
     for i in xrange(1, len(zooms)):
         tiles = []
@@ -42,9 +42,9 @@ def test_cli_streamdir_all_ok():
     setup_sample_1()
     runner = CliRunner()
 
-    result = runner.invoke(cli, ['streamdir', '/tmp/test-tile-stitcher', '/tmp/test-tile-stitcher', '-c', '14'])
+    result = runner.invoke(cli, ['streamdir', '/tmp/test-untiler', '/tmp/test-untiler', '-c', '14'])
     
-    assert result.output.rstrip() == '/tmp/test-tile-stitcher/14-2621-6348-tile.tif'    
+    assert result.output.rstrip() == '/tmp/test-untiler/14-2621-6348-tile.tif'    
 
     with rio.open(result.output.rstrip()) as src:
         assert src.shape == (8192, 8192)
@@ -58,15 +58,15 @@ def setup_sample_2(include=1):
     }
 
     try:
-        shutil.rmtree('/tmp/test-tile-stitcher')
+        shutil.rmtree('/tmp/test-untiler')
     except:
         pass
 
-    basepath = '/tmp/test-tile-stitcher/jpg'
+    basepath = '/tmp/test-untiler/jpg'
 
-    os.mkdir('/tmp/test-tile-stitcher')
+    os.mkdir('/tmp/test-untiler')
 
-    os.mkdir('/tmp/test-tile-stitcher/jpg')
+    os.mkdir('/tmp/test-untiler/jpg')
 
     for i in xrange(1, len(zooms)):
         tiles = []
@@ -109,9 +109,9 @@ def test_cli_streamdir_mixed_ok():
     setup_sample_2()
     runner = CliRunner()
 
-    result = runner.invoke(cli, ['streamdir', '/tmp/test-tile-stitcher', '/tmp/test-tile-stitcher', '-c', '14'])
+    result = runner.invoke(cli, ['streamdir', '/tmp/test-untiler', '/tmp/test-untiler', '-c', '14'])
     
-    assert result.output.rstrip() == '/tmp/test-tile-stitcher/14-2621-6348-tile.tif'    
+    assert result.output.rstrip() == '/tmp/test-untiler/14-2621-6348-tile.tif'    
 
     with rio.open(result.output.rstrip()) as src:
         assert src.shape == (8192, 8192)
