@@ -84,7 +84,11 @@ def make_window(x, y, xmin, ymin, windowsize):
 globalArgs = None
 
 
-def make_image_array(imdata, outputSize, depth):
+def make_image_array(imdata, outputSize):
+    depth = imdata.shape[-1]
+    if len(imdata.shape) == 2:
+        imdata = np.dstack([imdata])
+        depth = 1
     return np.array([
         imdata[:, :, 0 % depth],
         imdata[:, :, 1 % depth],
@@ -140,8 +144,7 @@ def streaming_tile_worker(data):
 
                     imdata = np.array(Image.open(path))
 
-                    depth = imdata.shape[-1]
-                    imdata = make_image_array(imdata, globalArgs['tileResolution'], depth)
+                    imdata = make_image_array(imdata, globalArgs['tileResolution'])
 
                     imdata = upsample(imdata, fDiff, frFaux, toFaux)
 
@@ -158,9 +161,7 @@ def streaming_tile_worker(data):
 
                 imdata = np.array(Image.open(path))
 
-                depth = imdata.shape[-1]
-
-                imdata = make_image_array(imdata, globalArgs['tileResolution'], depth)
+                imdata = make_image_array(imdata, globalArgs['tileResolution'])
 
                 window = make_window(x, y, baseX, baseY, globalArgs['tileResolution'])
 

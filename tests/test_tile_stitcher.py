@@ -218,7 +218,7 @@ def test_affaux(expectedAffauxs):
 def test_make_grey_imagedata():
     inputData = np.zeros((256, 256, 1), dtype=np.uint8)
 
-    imdata = stitcher.make_image_array(inputData, 256, 1)
+    imdata = stitcher.make_image_array(inputData, 256)
 
     assert imdata.shape == (4, 256, 256)
 
@@ -233,7 +233,7 @@ def test_make_grey_imagedata():
 def test_make_rgb_imagedata():
     inputData = np.zeros((256, 256, 4), dtype=np.uint8)
 
-    imdata = stitcher.make_image_array(inputData, 256, 4)
+    imdata = stitcher.make_image_array(inputData, 256)
 
     assert imdata.shape == (4, 256, 256)
     print("# OK - %s " % (inspect.stack()[0][3]))
@@ -268,6 +268,20 @@ def test_load_imagedata_grey():
     assert imsize == expectedLength
 
     assert depth == expectedDepth
+    print("# OK - %s " % (inspect.stack()[0][3]))
+
+def test_make_grey_depth2_imagedata():
+    inputData = np.zeros((256, 256), dtype=np.uint8)
+
+    imdata = stitcher.make_image_array(inputData, 256)
+
+    assert imdata.shape == (4, 256, 256)
+
+    assert np.array_equal(imdata[-1], np.zeros((256, 256), dtype=np.uint8) + 255)
+
+    assert np.array_equal(imdata[0], imdata[1])
+
+    assert np.array_equal(imdata[1], imdata[2])
     print("# OK - %s " % (inspect.stack()[0][3]))
 
 
