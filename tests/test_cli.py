@@ -5,17 +5,18 @@ import os, shutil, mercantile
 import numpy as np
 import rasterio as rio
 
+def cleanup():
+    try:
+        shutil.rmtree('/tmp/test-untiler')
+    except:
+        pass
+
 def setup_sample_1(include=1):
     zooms = np.arange(6) + 14
 
     obj = {
         zooms[0]: [mercantile.tile(-122.4, 37.5, 14)]
     }
-
-    try:
-        shutil.rmtree('/tmp/test-untiler')
-    except:
-        pass
 
     basepath = '/tmp/test-untiler/jpg'
 
@@ -39,6 +40,7 @@ def setup_sample_1(include=1):
         obj[zooms[i]] = tiles
 
 def test_cli_streamdir_all_ok():
+    cleanup()
     setup_sample_1()
     runner = CliRunner()
 
@@ -50,17 +52,14 @@ def test_cli_streamdir_all_ok():
         assert src.shape == (8192, 8192)
         assert src.count == 4
 
+    cleanup()
+
 def setup_sample_2(include=1):
     zooms = np.arange(3) + 14
 
     obj = {
         zooms[0]: [mercantile.tile(-122.4, 37.5, 14)]
     }
-
-    try:
-        shutil.rmtree('/tmp/test-untiler')
-    except:
-        pass
 
     basepath = '/tmp/test-untiler/jpg'
 
@@ -106,6 +105,7 @@ def setup_sample_2(include=1):
         obj[zooms[i]] = tiles
 
 def test_cli_streamdir_mixed_ok():
+    cleanup()
     setup_sample_2()
     runner = CliRunner()
 
@@ -116,5 +116,7 @@ def test_cli_streamdir_mixed_ok():
     with rio.open(result.output.rstrip()) as src:
         assert src.shape == (8192, 8192)
         assert src.count == 4
+
+    cleanup()
 
 
