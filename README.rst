@@ -3,9 +3,10 @@ untiler
 
 |Build Status| |Coverage Status|
 
-Utility to take a directory of {z}/{x}/{y}.(jpg\|png) tiles, and stitch
-into a scenetiff. Future versions will support fast indexed reading
-directly from ``tar`` archives.
+Utility to take a directory of ``{z}/{x}/{y}.(jpg|png)`` tiles, and
+stitch into a scenetiff (``tif`` w/ exact merc tile bounds). Future
+versions will support fast indexed reading directly from ``tar``
+archives.
 
 Install
 -------
