@@ -7,7 +7,7 @@ with codecs_open('README.rst', encoding='utf-8') as f:
     long_description = f.read()
 
 
-setup(name='tile-stitcher',
+setup(name='untiler',
       version='0.0.1',
       description=u"Stitch image tiles into composite TIFs",
       long_description=long_description,
@@ -15,7 +15,7 @@ setup(name='tile-stitcher',
       keywords='',
       author=u"Damon Burgett",
       author_email='damon@mapbox.com',
-      url='https://github.com/mapbox/tile-stitcher',
+      url='https://github.com/mapbox/untiler',
       license='MIT',
       packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
       include_package_data=True,
@@ -23,7 +23,6 @@ setup(name='tile-stitcher',
       install_requires=[
           'click',
           'rasterio',
-          'scipy',
           'mercantile'
       ],
       extras_require={
@@ -31,6 +30,6 @@ setup(name='tile-stitcher',
       },
       entry_points="""
       [console_scripts]
-      tile-stitch=tile_stitcher.scripts.cli:cli
+      untiler=untiler.scripts.cli:cli
       """
       )

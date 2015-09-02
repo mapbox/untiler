@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 import pytest
-import tile_stitcher as stitcher
-import tile_stitcher.scripts.stitch_utils as stitch_util
+import untiler
+from untiler.scripts import tile_utils
 
 import numpy as np
 import json, pickle, os
@@ -16,7 +16,7 @@ def test_templating_good_jpg():
     expectedInterp = 'tarbase/jpg/%s/%s/%s.jpg'
     template = 'tarbase/jpg/{z}/{x}/{y}.jpg'
 
-    matchTemplate, interpTemplate = stitch_util.parse_template(template)
+    matchTemplate, interpTemplate = tile_utils.parse_template(template)
 
     assert matchTemplate == expectedMatch
 
@@ -29,7 +29,7 @@ def test_templating_good_png():
     expectedInterp = 'tarbase/jpg/%s/%s/%s.png'
     template = 'tarbase/jpg/{z}/{x}/{y}.png'
 
-    matchTemplate, interpTemplate = stitch_util.parse_template(template)
+    matchTemplate, interpTemplate = tile_utils.parse_template(template)
 
     assert matchTemplate == expectedMatch
 
@@ -40,21 +40,21 @@ def test_templating_good_png():
 def test_templating_fails():
     template = 'tarbase/jpg/{x}/{y}/{z}.jpg'
     with pytest.raises(ValueError):
-        stitch_util.parse_template(template)
+        tile_utils.parse_template(template)
 
     template = 'tarbase/jpg/{z}/{x}/{y}.poop'
     with pytest.raises(ValueError):
-        stitch_util.parse_template(template)
+        tile_utils.parse_template(template)
 
     template = 'tarbase/jpg/z/x/y.jpg'
     with pytest.raises(ValueError):
-        stitch_util.parse_template(template)
+        tile_utils.parse_template(template)
     print("# OK - %s " % (inspect.stack()[0][3]))
 
 def tests_templating_scene_template():
     template = '{z}-{x}-{y}-source-date-tileid.tif'
 
-    template, sceneTemplate = stitch_util.parse_template(template)
+    template, sceneTemplate = tile_utils.parse_template(template)
 
     assert sceneTemplate == '%s-%s-%s-source-date-tileid.tif'
     print("# OK - %s " % (inspect.stack()[0][3]))
@@ -62,7 +62,7 @@ def tests_templating_scene_template():
 def tests_templating_scene_template_numeric():
     template = '{z}-{x}-{y}-source-2015-xyz.tif'
 
-    template, sceneTemplate = stitch_util.parse_template(template)
+    template, sceneTemplate = tile_utils.parse_template(template)
 
     assert sceneTemplate == '%s-%s-%s-source-2015-xyz.tif'
     print("# OK - %s " % (inspect.stack()[0][3]))
@@ -71,7 +71,7 @@ def tests_templating_scene_template_fails():
     template = '{x}-{y}-source-2015-xyz.tif'
 
     with pytest.raises(ValueError):
-        stitch_util.parse_template(template)
+        tile_utils.parse_template(template)
 
     print("# OK - %s " % (inspect.stack()[0][3]))
 
@@ -88,7 +88,7 @@ def expectedTileList():
 def test_parse_tiles(inputTilenames, expectedTileList):
     matchTemplate = '3857_9_83_202_20130517_242834/jpg/\d+/\d+/\d+.jpg'
 
-    tiler = stitch_util.TileUtils()
+    tiler = tile_utils.TileUtils()
 
     output_tiles = np.array([
         t for t in tiler.get_tiles(inputTilenames, matchTemplate)
@@ -112,7 +112,7 @@ def expectedTiles19():
         return json.load(ofile)
 
 def test_get_xys(expectedTileList, expectedTiles19):
-    tiler = stitch_util.TileUtils()
+    tiler = tile_utils.TileUtils()
     tiles, minX, minY, maxX, maxY = tiler.select_tiles(expectedTileList, 19)
 
     assert np.array_equal(tiles, np.array(expectedTiles19['tiles']))
@@ -124,7 +124,7 @@ def test_get_xys(expectedTileList, expectedTiles19):
     print("# OK - %s " % (inspect.stack()[0][3]))
 
 def test_get_xys_invalid_tiles():
-    tiler = stitch_util.TileUtils()
+    tiler = tile_utils.TileUtils()
     badtiles = np.array([0])
 
     with pytest.raises(ValueError):
@@ -138,7 +138,7 @@ def test_get_xys_invalid_tiles():
     print("# OK - %s " % (inspect.stack()[0][3]))
 
 def test_get_xys_invalid_zoom(expectedTileList):
-    tiler = stitch_util.TileUtils()
+    tiler = tile_utils.TileUtils()
     with pytest.raises(ValueError):
         tiles, minX, minY, maxX, maxY = tiler.select_tiles(expectedTileList, 20)
 
@@ -148,7 +148,7 @@ def test_affine():
     ul, lr = (-18848759.67889818, 19225441.354287542), (-18846313.693993058, 19222995.3693824)
     expected = np.array([0.5971642834774684, 0.0, -18848759.67889818, 0.0, -0.5971642834820159, 19225441.354287542, 0.0, 0.0, 1.0])
 
-    assert np.array_equal(np.array(stitcher.make_affine(4096, 4096, ul, lr)), expected)
+    assert np.array_equal(np.array(untiler.make_affine(4096, 4096, ul, lr)), expected)
     print("# OK - %s " % (inspect.stack()[0][3]))
 
 
@@ -163,7 +163,7 @@ def expectedMeta():
 def test_src_meta_making(expectedMeta):
     bounds = merc.bounds(10, 10, 10)
 
-    src_meta = stitcher.make_src_meta(bounds, 4096)
+    src_meta = untiler.make_src_meta(bounds, 4096)
 
     for k, e in zip(sorted(src_meta), sorted(expectedMeta)):
         assert k == e
@@ -174,7 +174,7 @@ def test_src_meta_making(expectedMeta):
 
 def test_make_window():
     expected = ((23808, 24064), (1024, 1280))
-    window = stitcher.make_window(102, 343, 98, 250, 256)
+    window = untiler.make_window(102, 343, 98, 250, 256)
 
     assert window == expected
     print("# OK - %s " % (inspect.stack()[0][3]))
@@ -182,19 +182,19 @@ def test_make_window():
 
 def test_make_window_fails():
     with pytest.raises(ValueError):
-        stitcher.make_window(102, 13, 98, 50, 256)
+        untiler.make_window(102, 13, 98, 50, 256)
     print("# OK - %s " % (inspect.stack()[0][3]))
 
 def test_upsampling():
     rShape = 2 ** int(np.random.rand() * 5 + 5)
     rUp = 2 ** int(np.random.rand() * 3 + 1)
 
-    toFaux, frFaux = stitcher.affaux(rUp)
+    toFaux, frFaux = untiler.affaux(rUp)
 
     test = np.zeros((3, rShape, rShape))
 
     with rasterio.drivers():
-        outputUp = stitcher.upsample(test, rUp, frFaux, toFaux)
+        outputUp = untiler.upsample(test, rUp, frFaux, toFaux)
 
     assert outputUp.shape == (3, rUp * rShape, rUp * rShape)
 
@@ -205,7 +205,7 @@ def expectedAffauxs():
     return np.array([1., 0., 0., 0., -1., 0., 0., 0., 1.]), np.array([4., 0., 0., 0., -4., 0., 0., 0., 1.])
 
 def test_affaux(expectedAffauxs):
-    toFaux, frFaux = stitcher.affaux(4)
+    toFaux, frFaux = untiler.affaux(4)
 
     expectedTo, expectedFr = expectedAffauxs
 
@@ -218,7 +218,7 @@ def test_affaux(expectedAffauxs):
 def test_make_grey_imagedata():
     inputData = np.zeros((256, 256, 1), dtype=np.uint8)
 
-    imdata = stitcher.make_image_array(inputData, 256)
+    imdata = untiler.make_image_array(inputData, 256)
 
     assert imdata.shape == (4, 256, 256)
 
@@ -233,7 +233,7 @@ def test_make_grey_imagedata():
 def test_make_rgb_imagedata():
     inputData = np.zeros((256, 256, 4), dtype=np.uint8)
 
-    imdata = stitcher.make_image_array(inputData, 256)
+    imdata = untiler.make_image_array(inputData, 256)
 
     assert imdata.shape == (4, 256, 256)
     print("# OK - %s " % (inspect.stack()[0][3]))
@@ -245,7 +245,7 @@ def test_load_imagedata_rgb():
     expectedSize = 256
     inputData = np.zeros((expectedLength, expectedDepth), dtype=np.uint8)
 
-    imdata, imsize, depth = stitcher.load_image_data(inputData, expectedSize)
+    imdata, imsize, depth = untiler.load_image_data(inputData, expectedSize)
 
     assert imdata.shape == (expectedSize, expectedSize, expectedDepth,)
 
@@ -261,7 +261,7 @@ def test_load_imagedata_grey():
     expectedSize = 256
     inputData = np.zeros((expectedLength, expectedDepth), dtype=np.uint8)
 
-    imdata, imsize, depth = stitcher.load_image_data(inputData, expectedSize)
+    imdata, imsize, depth = untiler.load_image_data(inputData, expectedSize)
 
     assert imdata.shape == (expectedSize, expectedSize, expectedDepth,)
 
@@ -273,7 +273,7 @@ def test_load_imagedata_grey():
 def test_make_grey_depth2_imagedata():
     inputData = np.zeros((256, 256), dtype=np.uint8)
 
-    imdata = stitcher.make_image_array(inputData, 256)
+    imdata = untiler.make_image_array(inputData, 256)
 
     assert imdata.shape == (4, 256, 256)
 
@@ -292,7 +292,7 @@ def test_load_imagedata_random():
 
     inputData = np.zeros((expectedLength, expectedDepth), dtype=np.uint8)
 
-    imdata, imsize, depth = stitcher.load_image_data(inputData, expectedSize)
+    imdata, imsize, depth = untiler.load_image_data(inputData, expectedSize)
 
     assert imdata.shape == (expectedSize, expectedSize, expectedDepth,)
 
@@ -309,7 +309,7 @@ def test_load_imagedata_fails():
     inputData = np.zeros((expectedLength, expectedDepth), dtype=np.uint8)
 
     with pytest.raises(ValueError):
-        imdata, imsize, depth = stitcher.load_image_data(inputData, expectedSize)
+        imdata, imsize, depth = untiler.load_image_data(inputData, expectedSize)
 
     print("# OK - %s " % (inspect.stack()[0][3]))
 
@@ -324,7 +324,7 @@ def expectedSuper():
         return np.array(json.load(ofile))
 
 def test_create_supertiles(tilesShort, expectedSuper):
-    tiler = stitch_util.TileUtils()
+    tiler = tile_utils.TileUtils()
     superTiles = tiler.get_super_tiles(tilesShort, 14)
 
     assert tilesShort.shape == superTiles.shape
@@ -333,7 +333,7 @@ def test_create_supertiles(tilesShort, expectedSuper):
     print("# OK - %s " % (inspect.stack()[0][3]))
 
 def test_create_supertiles_fails(tilesShort):
-    tiler = stitch_util.TileUtils()
+    tiler = tile_utils.TileUtils()
 
     with pytest.raises(ValueError):
         superTiles = tiler.get_super_tiles(tilesShort, 20)
@@ -345,7 +345,7 @@ def uniqueExpected():
     return np.array([[14, 2684, 6464], [14, 2685, 6464], [14, 2686, 6464], [14, 2687, 6464]])
 
 def test_find_unique_tiles(expectedSuper, uniqueExpected):
-    tiler = stitch_util.TileUtils()
+    tiler = tile_utils.TileUtils()
     uniqueTiles = tiler.get_unique_tiles(expectedSuper)
 
     assert np.array_equal(uniqueTiles, uniqueExpected)
@@ -358,7 +358,7 @@ def expectedZooms():
         return json.load(ofile)
 
 def test_find_zoom_tiles(expectedTileList, expectedZooms):
-    tiler = stitch_util.TileUtils()
+    tiler = tile_utils.TileUtils()
 
     superTiles = tiler.get_super_tiles(expectedTileList, 13)
 
@@ -371,7 +371,7 @@ def test_find_zoom_tiles(expectedTileList, expectedZooms):
     print("# OK - %s " % (inspect.stack()[0][3]))
 
 def test_find_zoom_tiles_fail(expectedTileList):
-    tiler = stitch_util.TileUtils()
+    tiler = tile_utils.TileUtils()
     superTiles = tiler.get_super_tiles(expectedTileList, 13)[:-10]
 
     with pytest.raises(ValueError):
@@ -382,7 +382,7 @@ def test_find_zoom_tiles_floor_fail(expectedTileList):
     ### a subset of tiles that don't have any tiles less than z 17
     tiles = expectedTileList[:1000]
 
-    tiler = stitch_util.TileUtils()
+    tiler = tile_utils.TileUtils()
     superTiles = tiler.get_super_tiles(tiles, 12)
     with pytest.raises(ValueError):
         tiler.get_zoom_tiles(tiles, superTiles, superTiles[0], 17)
@@ -392,7 +392,7 @@ def test_find_zoom_tiles_floor(expectedTileList):
     ### a subset of tiles that have tiles less than z 17
     tiles = expectedTileList[1000:]
 
-    tiler = stitch_util.TileUtils()
+    tiler = tile_utils.TileUtils()
     superTiles = tiler.get_super_tiles(tiles, 13)
 
     zMaxtiles, zFloortiles = tiler.get_zoom_tiles(tiles, superTiles, superTiles[-1], 17)
@@ -407,7 +407,7 @@ def test_logger():
     rstring = ''.join(np.random.randint(0,9, 10000).astype(str))
     rfile =  '/tmp/%s.log'% (''.join(np.random.randint(0,9, 5).astype(str)))
     with open(rfile, 'w') as loggerfile:
-        stitcher.logwriter(loggerfile, rstring)
+        untiler.logwriter(loggerfile, rstring)
 
     with open(rfile) as ofile:
         logged = ofile.read()

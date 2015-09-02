@@ -4,7 +4,7 @@ import os, tarfile, re
 
 import click, mercantile
 
-import tile_stitcher as tile_stitch
+import untiler
 
 @click.group()
 def cli():
@@ -22,7 +22,7 @@ def cli():
 @click.option('--scenetemplate', '-s', default="{z}-{x}-{y}-tile.tif", help="Template for output scenetif filenames [default='{z}-{x}-{y}-tile.tif']")
 @click.option('--workers', '-w', default=4, help="Number of workers in the processing pool [default=4]")
 def streamdir(input_dir, output_dir, compositezoom, maxzoom, logdir, readtemplate, scenetemplate, workers):
-    tile_stitch.stream_dir(input_dir, output_dir, compositezoom, maxzoom, logdir, readtemplate, scenetemplate, workers)
+    untiler.stream_dir(input_dir, output_dir, compositezoom, maxzoom, logdir, readtemplate, scenetemplate, workers)
 
 cli.add_command(streamdir)
 
@@ -31,7 +31,7 @@ cli.add_command(streamdir)
 @click.option('--zoom', '-z', default=None, type=int,
     help='Zoom to inspect [default = all]')
 def inspectdir(input_dir, zoom):
-    tile_stitch.inspect_dir(input_dir, zoom)
+    untiler.inspect_dir(input_dir, zoom)
 
 cli.add_command(inspectdir)
 
