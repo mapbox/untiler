@@ -1,6 +1,6 @@
 from click.testing import CliRunner
 
-from tile_stitcher.scripts.cli import cli
+from untiler.scripts.cli import cli
 import os, shutil, mercantile
 import numpy as np
 import rasterio as rio

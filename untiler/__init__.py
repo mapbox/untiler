@@ -11,7 +11,7 @@ import rasterio
 from rasterio import Affine
 from multiprocessing import Pool
 from PIL import Image
-import tile_stitcher.scripts.stitch_utils as stitch_utils
+import untiler.scripts.tile_utils as tile_utils
 from rasterio.warp import reproject, RESAMPLING
 
 
@@ -120,7 +120,7 @@ def streaming_tile_worker(data):
     size = 2 ** (data['zMax'] - globalArgs['compositezoom']) * globalArgs['tileResolution']
     out_meta = make_src_meta(merc.bounds(data['x'], data['y'], data['z']), size)
     filename = globalArgs['sceneTemplate'] % (data['z'], data['x'], data['y'])
-    subtiler = stitch_utils.TileUtils()
+    subtiler = tile_utils.TileUtils()
     log = 'FILE: %s\n' % filename
     try:
         with rasterio.open(filename, 'w', **out_meta) as dst:
@@ -176,11 +176,11 @@ def streaming_tile_worker(data):
         raise e
 
 def inspect_dir(inputDir, zoom):
-    tiler = stitch_utils.TileUtils()
+    tiler = tile_utils.TileUtils()
 
     allFiles = tiler.search_dir(inputDir)
 
-    template, readTemplate = stitch_utils.parse_template("%s/jpg/{z}/{x}/{y}.jpg" % (inputDir))
+    template, readTemplate = tile_utils.parse_template("%s/jpg/{z}/{x}/{y}.jpg" % (inputDir))
 
     allTiles = np.array([i for i in tiler.get_tiles(allFiles, template)])
 
@@ -191,11 +191,11 @@ def inspect_dir(inputDir, zoom):
         click.echo([x, y, z])
 
 def stream_dir(inputDir, outputDir, compositezoom, maxzoom, logdir, read_template, scene_template, workers):
-    tiler = stitch_utils.TileUtils()
+    tiler = tile_utils.TileUtils()
 
     allFiles = tiler.search_dir(inputDir)
 
-    template, readTemplate = stitch_utils.parse_template("%s/%s" % (inputDir, read_template))
+    template, readTemplate = tile_utils.parse_template("%s/%s" % (inputDir, read_template))
 
     allTiles = np.array([i for i in tiler.get_tiles(allFiles, template)])
 
@@ -208,7 +208,7 @@ def stream_dir(inputDir, outputDir, compositezoom, maxzoom, logdir, read_templat
     if allTiles.shape[0] == 0:
         raise ValueError("No tiles were found below that maxzoom")
 
-    _, sceneTemplate = stitch_utils.parse_template("%s/%s" % (outputDir, scene_template))
+    _, sceneTemplate = tile_utils.parse_template("%s/%s" % (outputDir, scene_template))
 
     pool = Pool(workers, global_setup, (inputDir, {
         'maxzoom': maxzoom,
