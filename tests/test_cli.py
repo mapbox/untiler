@@ -81,8 +81,7 @@ def test_cli_streamdir_mixed_ok():
     testtiles = TestTiler('/tmp/test-untiler')
     testtiles.add_tiles(15, 16)
     runner = CliRunner()
-    
-    # with pytest.raises(ValueError):
+
     result = runner.invoke(cli, ['streamdir', '/tmp/test-untiler', '/tmp/test-untiler', '-c', '14', '-t', 'poo/{z}/{z}/{z}.jpg'])
 
     assert result.exit_code == -1
