@@ -8,7 +8,7 @@ with codecs_open('README.rst', encoding='utf-8') as f:
 
 
 setup(name='untiler',
-      version='0.0.1',
+      version='0.0.2',
       description=u"Combine image tiles into composite TIFs",
       long_description=long_description,
       classifiers=[],
