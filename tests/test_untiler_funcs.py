@@ -83,6 +83,16 @@ def tests_templating_scene_template_fails():
 
     print("# OK - %s " % (inspect.stack()[0][3]))
 
+def tests_templating_scene_template_separator_fails():
+    template = '{z}/{x}-{y}-source-2015-xyz.tif'
+
+    tile_utils.parse_template(template)
+
+    with pytest.raises(ValueError):
+        tile_utils.parse_template(template)
+
+    print("# OK - %s " % (inspect.stack()[0][3]))
+
 @pytest.fixture
 def inputTilenames():
     with open('tests/fixtures/tar_list.json') as ofile:

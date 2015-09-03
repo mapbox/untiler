@@ -141,11 +141,11 @@ def parse_template(template):
     if pattern.match(template):    
         valPattern = re.compile(r"{(z|x|y)}")
         filepath = re.compile(r"(jpg|png|tif)$")
-        sepmatch = re.compile(r"(?:{z}|{x})(/|-)(?:{x}|{y})")
-        separator = sepmatch.findall(template)
+        sepmatch = re.compile(r"(?:{z})(/|-)(?:{x})(/|-)(?:{y})")
+        separator = sepmatch.findall(template)[0]
 
-        if len(separator) == 2 and separator[0] != separator[1]:
-            raise ValueError('Too many separators!')
+        if len(separator) != 2 or separator[0] != separator[1]:
+            raise ValueError('Too many / not matching separators!')
     
         return valPattern.sub('\d+', template), valPattern.sub('%s', template), separator[0]
     else:
