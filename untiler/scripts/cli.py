@@ -30,8 +30,10 @@ cli.add_command(streamdir)
 @click.argument('input_dir', type=click.Path(exists=True))
 @click.option('--zoom', '-z', default=None, type=int,
     help='Zoom to inspect [default = all]')
-def inspectdir(input_dir, zoom):
-    untiler.inspect_dir(input_dir, zoom)
+@click.option('--readtemplate', '-t', default="jpg/{z}/{x}/{y}.jpg",
+    help="File path template [default='jpg/{z}/{x}/{y}.jpg']")
+def inspectdir(input_dir, zoom, readtemplate):
+    untiler.inspect_dir(input_dir, zoom, readtemplate)
 
 cli.add_command(inspectdir)
 

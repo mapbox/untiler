@@ -9,15 +9,16 @@ class TileUtils:
             for f in fn:
                 yield os.path.join(dp, f)
 
-    def get_tiles(self, filenames, template):
+    def get_tiles(self, filenames, template, separator):
         """
         Given a list of tar pathnames + templates, parse Z X Ys
         """
         validtile = re.compile(template)
         for f in filenames:
             if validtile.match(f):
+                matchstring = r"\d+%s\d+%s\d+" % (separator, separator)
                 yield [
-                    int(i) for i in re.compile(r"\d+/\d+/\d+").findall(f)[-1].split('/')
+                    int(i) for i in re.compile(matchstring).findall(f)[-1].split(separator)
                 ]
 
     def select_tiles(self, tiles, zoom):
@@ -140,8 +141,13 @@ def parse_template(template):
     if pattern.match(template):    
         valPattern = re.compile(r"{(z|x|y)}")
         filepath = re.compile(r"(jpg|png|tif)$")
+        sepmatch = re.compile(r"(?:{z})(/|-)(?:{x})(/|-)(?:{y})")
+        separator = sepmatch.findall(template)[0]
+
+        if len(separator) != 2 or separator[0] != separator[1]:
+            raise ValueError('Too many / not matching separators!')
     
-        return valPattern.sub('\d+', template), valPattern.sub('%s', template)
+        return valPattern.sub('\d+', template), valPattern.sub('%s', template), separator[0]
     else:
         raise ValueError('Invalid template "%s"' % (template))
 

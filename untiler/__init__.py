@@ -10,7 +10,6 @@ import numpy as np
 import rasterio
 from rasterio import Affine
 from multiprocessing import Pool
-from PIL import Image
 import untiler.scripts.tile_utils as tile_utils
 from rasterio.warp import reproject, RESAMPLING
 
@@ -85,16 +84,17 @@ globalArgs = None
 
 
 def make_image_array(imdata, outputSize):
-    depth = imdata.shape[-1]
-    if len(imdata.shape) == 2:
-        imdata = np.dstack([imdata])
-        depth = 1
-    return np.array([
-        imdata[:, :, 0 % depth],
-        imdata[:, :, 1 % depth],
-        imdata[:, :, 2 % depth],
-        np.zeros((outputSize, outputSize), dtype=np.uint8) + 255
-    ])
+    try:
+        depth, width, height = imdata.shape
+
+        return np.array([
+            imdata[0 % depth, :, :],
+            imdata[1 % depth, :, :],
+            imdata[2 % depth, :, :],
+            np.zeros((outputSize, outputSize), dtype=np.uint8) + 255
+        ])
+    except Exception as e:
+        raise e
 
 
 def load_image_data(imdata, outputSize):
@@ -123,66 +123,69 @@ def streaming_tile_worker(data):
     subtiler = tile_utils.TileUtils()
     log = 'FILE: %s\n' % filename
     try:
-        with rasterio.open(filename, 'w', **out_meta) as dst:
-            if data['zMaxCov']: 
-                superTiles = subtiler.get_super_tiles(data['zMaxTiles'], data['zMaxCov'])
+        with rasterio.drivers():
+            with rasterio.open(filename, 'w', **out_meta) as dst:
+                if data['zMaxCov']: 
+                    superTiles = subtiler.get_super_tiles(data['zMaxTiles'], data['zMaxCov'])
 
-                fillbaseX, fillbaseY = subtiler.get_sub_base_zoom(data['x'], data['y'], data['z'], data['zMaxCov'])
+                    fillbaseX, fillbaseY = subtiler.get_sub_base_zoom(data['x'], data['y'], data['z'], data['zMaxCov'])
 
-                ## fill thresh == the number of sub tiles that would need to occur in a fill tile to not fill (eg completely covered)
-                fThresh = 4 ** (data['zMax'] - data['zMaxCov'])
+                    ## fill thresh == the number of sub tiles that would need to occur in a fill tile to not fill (eg completely covered)
+                    fThresh = 4 ** (data['zMax'] - data['zMaxCov'])
 
-                fDiff = 2 ** (data['zMax'] - data['zMaxCov'])
+                    fDiff = 2 ** (data['zMax'] - data['zMaxCov'])
 
-                toFaux, frFaux = affaux(fDiff)
+                    toFaux, frFaux = affaux(fDiff)
 
-                ## Read and write the fill tiles first
-                for t in subtiler.get_fill_super_tiles(superTiles, data['maxCovTiles'], fThresh):
+                    ## Read and write the fill tiles first
+                    for t in subtiler.get_fill_super_tiles(superTiles, data['maxCovTiles'], fThresh):
+                        z, x, y = t
+                        path = globalArgs['readTemplate'] % (z, x, y)
+                        log += '%s %s %s\n' % (z, x, y)
+
+                        with rasterio.open(path) as src:
+                            imdata = src.read()
+
+                        imdata = make_image_array(imdata, globalArgs['tileResolution'])
+                        click.echo(imdata.shape, err=True)
+                        imdata = upsample(imdata, fDiff, frFaux, toFaux)
+
+                        window = make_window(x, y, fillbaseX, fillbaseY, globalArgs['tileResolution'] * fDiff)
+                        dst.write(imdata, window=window)
+
+
+                baseX, baseY = subtiler.get_sub_base_zoom(data['x'], data['y'], data['z'], data['zMax'])
+
+                for t in data['zMaxTiles']:
                     z, x, y = t
                     path = globalArgs['readTemplate'] % (z, x, y)
                     log += '%s %s %s\n' % (z, x, y)
 
-                    imdata = np.array(Image.open(path))
+                    with rasterio.open(path) as src:
+                        imdata = src.read()
 
                     imdata = make_image_array(imdata, globalArgs['tileResolution'])
 
-                    imdata = upsample(imdata, fDiff, frFaux, toFaux)
+                    window = make_window(x, y, baseX, baseY, globalArgs['tileResolution'])
 
-                    window = make_window(x, y, fillbaseX, fillbaseY, globalArgs['tileResolution'] * fDiff)
                     dst.write(imdata, window=window)
+            if globalArgs['logdir']:
+                with open(os.path.join(globalArgs['logdir'], '%s.log' % os.path.basename(filename)), 'w') as logger:
+                    logwriter(logger, log)
 
-
-            baseX, baseY = subtiler.get_sub_base_zoom(data['x'], data['y'], data['z'], data['zMax'])
-
-            for t in data['zMaxTiles']:
-                z, x, y = t
-                path = globalArgs['readTemplate'] % (z, x, y)
-                log += '%s %s %s\n' % (z, x, y)
-
-                imdata = np.array(Image.open(path))
-
-                imdata = make_image_array(imdata, globalArgs['tileResolution'])
-
-                window = make_window(x, y, baseX, baseY, globalArgs['tileResolution'])
-
-                dst.write(imdata, window=window)
-        if globalArgs['logdir']:
-            with open(os.path.join(globalArgs['logdir'], '%s.log' % os.path.basename(filename)), 'w') as logger:
-                logwriter(logger, log)
-
-        return filename
+            return filename
 
     except Exception as e:
         raise e
 
-def inspect_dir(inputDir, zoom):
+def inspect_dir(inputDir, zoom, read_template):
     tiler = tile_utils.TileUtils()
 
     allFiles = tiler.search_dir(inputDir)
 
-    template, readTemplate = tile_utils.parse_template("%s/jpg/{z}/{x}/{y}.jpg" % (inputDir))
+    template, readTemplate, separator = tile_utils.parse_template("%s/%s" % (inputDir, read_template))
 
-    allTiles = np.array([i for i in tiler.get_tiles(allFiles, template)])
+    allTiles = np.array([i for i in tiler.get_tiles(allFiles, template, separator)])
 
     allTiles, _, _, _, _ = tiler.select_tiles(allTiles, zoom)
 
@@ -195,9 +198,9 @@ def stream_dir(inputDir, outputDir, compositezoom, maxzoom, logdir, read_templat
 
     allFiles = tiler.search_dir(inputDir)
 
-    template, readTemplate = tile_utils.parse_template("%s/%s" % (inputDir, read_template))
+    template, readTemplate, separator = tile_utils.parse_template("%s/%s" % (inputDir, read_template))
 
-    allTiles = np.array([i for i in tiler.get_tiles(allFiles, template)])
+    allTiles = np.array([i for i in tiler.get_tiles(allFiles, template, separator)])
 
     if allTiles.shape[0] == 0 or allTiles.shape[1] != 3:
         raise ValueError("No tiles were found for that template")
@@ -208,7 +211,7 @@ def stream_dir(inputDir, outputDir, compositezoom, maxzoom, logdir, read_templat
     if allTiles.shape[0] == 0:
         raise ValueError("No tiles were found below that maxzoom")
 
-    _, sceneTemplate = tile_utils.parse_template("%s/%s" % (outputDir, scene_template))
+    _, sceneTemplate, _ = tile_utils.parse_template("%s/%s" % (outputDir, scene_template))
 
     pool = Pool(workers, global_setup, (inputDir, {
         'maxzoom': maxzoom,

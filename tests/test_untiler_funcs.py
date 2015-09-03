@@ -16,11 +16,13 @@ def test_templating_good_jpg():
     expectedInterp = 'tarbase/jpg/%s/%s/%s.jpg'
     template = 'tarbase/jpg/{z}/{x}/{y}.jpg'
 
-    matchTemplate, interpTemplate = tile_utils.parse_template(template)
+    matchTemplate, interpTemplate, separator = tile_utils.parse_template(template)
 
     assert matchTemplate == expectedMatch
 
     assert interpTemplate == expectedInterp
+
+    assert separator == "/"
     print("# OK - %s " % (inspect.stack()[0][3]))
 
 
@@ -29,7 +31,9 @@ def test_templating_good_png():
     expectedInterp = 'tarbase/jpg/%s/%s/%s.png'
     template = 'tarbase/jpg/{z}/{x}/{y}.png'
 
-    matchTemplate, interpTemplate = tile_utils.parse_template(template)
+    matchTemplate, interpTemplate, separator = tile_utils.parse_template(template)
+
+    assert separator == "/"
 
     assert matchTemplate == expectedMatch
 
@@ -54,7 +58,9 @@ def test_templating_fails():
 def tests_templating_scene_template():
     template = '{z}-{x}-{y}-source-date-tileid.tif'
 
-    template, sceneTemplate = tile_utils.parse_template(template)
+    template, sceneTemplate, separator = tile_utils.parse_template(template)
+
+    assert separator == '-'
 
     assert sceneTemplate == '%s-%s-%s-source-date-tileid.tif'
     print("# OK - %s " % (inspect.stack()[0][3]))
@@ -62,13 +68,23 @@ def tests_templating_scene_template():
 def tests_templating_scene_template_numeric():
     template = '{z}-{x}-{y}-source-2015-xyz.tif'
 
-    template, sceneTemplate = tile_utils.parse_template(template)
+    template, sceneTemplate, separator = tile_utils.parse_template(template)
 
+
+    assert separator == '-'
     assert sceneTemplate == '%s-%s-%s-source-2015-xyz.tif'
     print("# OK - %s " % (inspect.stack()[0][3]))
 
 def tests_templating_scene_template_fails():
     template = '{x}-{y}-source-2015-xyz.tif'
+
+    with pytest.raises(ValueError):
+        tile_utils.parse_template(template)
+
+    print("# OK - %s " % (inspect.stack()[0][3]))
+
+def tests_templating_scene_template_separator_fails():
+    template = '{z}/{x}-{y}-source-2015-xyz.tif'
 
     with pytest.raises(ValueError):
         tile_utils.parse_template(template)
@@ -91,7 +107,7 @@ def test_parse_tiles(inputTilenames, expectedTileList):
     tiler = tile_utils.TileUtils()
 
     output_tiles = np.array([
-        t for t in tiler.get_tiles(inputTilenames, matchTemplate)
+        t for t in tiler.get_tiles(inputTilenames, matchTemplate, '/')
         ])
 
     assert np.array_equal(output_tiles, expectedTileList)
@@ -99,7 +115,7 @@ def test_parse_tiles(inputTilenames, expectedTileList):
     tweakedTilenames = [f.replace('/', '?') for f in inputTilenames]
 
     output_tiles = np.array([
-        t for t in tiler.get_tiles(tweakedTilenames, matchTemplate)
+        t for t in tiler.get_tiles(tweakedTilenames, matchTemplate, '/')
         ])
 
     assert len(output_tiles) == 0
@@ -216,7 +232,7 @@ def test_affaux(expectedAffauxs):
 
 
 def test_make_grey_imagedata():
-    inputData = np.zeros((256, 256, 1), dtype=np.uint8)
+    inputData = np.zeros((1, 256, 256), dtype=np.uint8)
 
     imdata = untiler.make_image_array(inputData, 256)
 
@@ -231,7 +247,7 @@ def test_make_grey_imagedata():
 
 
 def test_make_rgb_imagedata():
-    inputData = np.zeros((256, 256, 4), dtype=np.uint8)
+    inputData = np.zeros((3, 256, 256), dtype=np.uint8)
 
     imdata = untiler.make_image_array(inputData, 256)
 
@@ -270,18 +286,13 @@ def test_load_imagedata_grey():
     assert depth == expectedDepth
     print("# OK - %s " % (inspect.stack()[0][3]))
 
-def test_make_grey_depth2_imagedata():
+# With rasterio, this test no longer applies - still, checking for failure
+def test_make_grey_depth2_fails():
     inputData = np.zeros((256, 256), dtype=np.uint8)
 
-    imdata = untiler.make_image_array(inputData, 256)
+    with pytest.raises(ValueError):
+        imdata = untiler.make_image_array(inputData, 256)
 
-    assert imdata.shape == (4, 256, 256)
-
-    assert np.array_equal(imdata[-1], np.zeros((256, 256), dtype=np.uint8) + 255)
-
-    assert np.array_equal(imdata[0], imdata[1])
-
-    assert np.array_equal(imdata[1], imdata[2])
     print("# OK - %s " % (inspect.stack()[0][3]))
 
 
