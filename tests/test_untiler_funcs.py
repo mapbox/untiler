@@ -216,7 +216,7 @@ def test_affaux(expectedAffauxs):
 
 
 def test_make_grey_imagedata():
-    inputData = np.zeros((256, 256, 1), dtype=np.uint8)
+    inputData = np.zeros((1, 256, 256), dtype=np.uint8)
 
     imdata = untiler.make_image_array(inputData, 256)
 
@@ -231,7 +231,7 @@ def test_make_grey_imagedata():
 
 
 def test_make_rgb_imagedata():
-    inputData = np.zeros((256, 256, 4), dtype=np.uint8)
+    inputData = np.zeros((3, 256, 256), dtype=np.uint8)
 
     imdata = untiler.make_image_array(inputData, 256)
 
@@ -270,18 +270,13 @@ def test_load_imagedata_grey():
     assert depth == expectedDepth
     print("# OK - %s " % (inspect.stack()[0][3]))
 
-def test_make_grey_depth2_imagedata():
+# With rasterio, this test no longer applies - still, checking for failure
+def test_make_grey_depth2_fails():
     inputData = np.zeros((256, 256), dtype=np.uint8)
 
-    imdata = untiler.make_image_array(inputData, 256)
+    with pytest.raises(ValueError):
+        imdata = untiler.make_image_array(inputData, 256)
 
-    assert imdata.shape == (4, 256, 256)
-
-    assert np.array_equal(imdata[-1], np.zeros((256, 256), dtype=np.uint8) + 255)
-
-    assert np.array_equal(imdata[0], imdata[1])
-
-    assert np.array_equal(imdata[1], imdata[2])
     print("# OK - %s " % (inspect.stack()[0][3]))
 
 

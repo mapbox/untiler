@@ -13,6 +13,7 @@ class TestTiler:
         self.path = path
         self.cleanup()
         os.mkdir(self.path)
+        self.imgs = ['tests/fixtures/fill_img.jpg', 'tests/fixtures/fill_img_grey.jpg']
 
     def cleanup(self):
         try:
@@ -38,11 +39,11 @@ class TestTiler:
                 for tt in mercantile.children(t):
                     tiles.append(tt)
                     if os.path.isdir("%s/%s/%s" % (basepath, zooms[i], tt.x)):
-                        shutil.copy('tests/fixtures/fill_img.jpg',
+                        shutil.copy(self.imgs[int(np.random.rand() + 0.1)],
                                     "%s/%s/%s/%s.jpg" % (basepath, zooms[i], tt.x, tt.y))
                     else:
                         os.mkdir("%s/%s/%s" % (basepath, zooms[i], tt.x))
-                        shutil.copy('tests/fixtures/fill_img.jpg',
+                        shutil.copy(self.imgs[int(np.random.rand() + 0.1)],
                                     "%s/%s/%s/%s.jpg" % (basepath, zooms[i], tt.x, tt.y))
             obj[zooms[i]] = tiles
 
