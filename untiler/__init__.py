@@ -178,14 +178,14 @@ def streaming_tile_worker(data):
     except Exception as e:
         raise e
 
-def inspect_dir(inputDir, zoom):
+def inspect_dir(inputDir, zoom, read_template):
     tiler = tile_utils.TileUtils()
 
     allFiles = tiler.search_dir(inputDir)
 
-    template, readTemplate = tile_utils.parse_template("%s/jpg/{z}/{x}/{y}.jpg" % (inputDir))
+    template, readTemplate, separator = tile_utils.parse_template("%s/%s" % (inputDir, read_template))
 
-    allTiles = np.array([i for i in tiler.get_tiles(allFiles, template)])
+    allTiles = np.array([i for i in tiler.get_tiles(allFiles, template, separator)])
 
     allTiles, _, _, _, _ = tiler.select_tiles(allTiles, zoom)
 
@@ -198,9 +198,9 @@ def stream_dir(inputDir, outputDir, compositezoom, maxzoom, logdir, read_templat
 
     allFiles = tiler.search_dir(inputDir)
 
-    template, readTemplate = tile_utils.parse_template("%s/%s" % (inputDir, read_template))
+    template, readTemplate, separator = tile_utils.parse_template("%s/%s" % (inputDir, read_template))
 
-    allTiles = np.array([i for i in tiler.get_tiles(allFiles, template)])
+    allTiles = np.array([i for i in tiler.get_tiles(allFiles, template, separator)])
 
     if allTiles.shape[0] == 0 or allTiles.shape[1] != 3:
         raise ValueError("No tiles were found for that template")
@@ -211,7 +211,7 @@ def stream_dir(inputDir, outputDir, compositezoom, maxzoom, logdir, read_templat
     if allTiles.shape[0] == 0:
         raise ValueError("No tiles were found below that maxzoom")
 
-    _, sceneTemplate = tile_utils.parse_template("%s/%s" % (outputDir, scene_template))
+    _, sceneTemplate, _ = tile_utils.parse_template("%s/%s" % (outputDir, scene_template))
 
     pool = Pool(workers, global_setup, (inputDir, {
         'maxzoom': maxzoom,

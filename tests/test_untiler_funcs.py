@@ -16,11 +16,13 @@ def test_templating_good_jpg():
     expectedInterp = 'tarbase/jpg/%s/%s/%s.jpg'
     template = 'tarbase/jpg/{z}/{x}/{y}.jpg'
 
-    matchTemplate, interpTemplate = tile_utils.parse_template(template)
+    matchTemplate, interpTemplate, separator = tile_utils.parse_template(template)
 
     assert matchTemplate == expectedMatch
 
     assert interpTemplate == expectedInterp
+
+    assert separator == "/"
     print("# OK - %s " % (inspect.stack()[0][3]))
 
 
@@ -29,7 +31,9 @@ def test_templating_good_png():
     expectedInterp = 'tarbase/jpg/%s/%s/%s.png'
     template = 'tarbase/jpg/{z}/{x}/{y}.png'
 
-    matchTemplate, interpTemplate = tile_utils.parse_template(template)
+    matchTemplate, interpTemplate, separator = tile_utils.parse_template(template)
+
+    assert separator == "/"
 
     assert matchTemplate == expectedMatch
 
@@ -54,7 +58,9 @@ def test_templating_fails():
 def tests_templating_scene_template():
     template = '{z}-{x}-{y}-source-date-tileid.tif'
 
-    template, sceneTemplate = tile_utils.parse_template(template)
+    template, sceneTemplate, separator = tile_utils.parse_template(template)
+
+    assert separator == '-'
 
     assert sceneTemplate == '%s-%s-%s-source-date-tileid.tif'
     print("# OK - %s " % (inspect.stack()[0][3]))
@@ -62,8 +68,10 @@ def tests_templating_scene_template():
 def tests_templating_scene_template_numeric():
     template = '{z}-{x}-{y}-source-2015-xyz.tif'
 
-    template, sceneTemplate = tile_utils.parse_template(template)
+    template, sceneTemplate, separator = tile_utils.parse_template(template)
 
+
+    assert separator == '-'
     assert sceneTemplate == '%s-%s-%s-source-2015-xyz.tif'
     print("# OK - %s " % (inspect.stack()[0][3]))
 
@@ -91,7 +99,7 @@ def test_parse_tiles(inputTilenames, expectedTileList):
     tiler = tile_utils.TileUtils()
 
     output_tiles = np.array([
-        t for t in tiler.get_tiles(inputTilenames, matchTemplate)
+        t for t in tiler.get_tiles(inputTilenames, matchTemplate, '/')
         ])
 
     assert np.array_equal(output_tiles, expectedTileList)
@@ -99,7 +107,7 @@ def test_parse_tiles(inputTilenames, expectedTileList):
     tweakedTilenames = [f.replace('/', '?') for f in inputTilenames]
 
     output_tiles = np.array([
-        t for t in tiler.get_tiles(tweakedTilenames, matchTemplate)
+        t for t in tiler.get_tiles(tweakedTilenames, matchTemplate, '/')
         ])
 
     assert len(output_tiles) == 0
