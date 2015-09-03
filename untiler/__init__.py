@@ -10,7 +10,6 @@ import numpy as np
 import rasterio
 from rasterio import Affine
 from multiprocessing import Pool
-from PIL import Image
 import untiler.scripts.tile_utils as tile_utils
 from rasterio.warp import reproject, RESAMPLING
 
