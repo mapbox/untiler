@@ -118,8 +118,6 @@ def test_diff_zooms():
 
     expected_scenes = '/tmp/test-untiler/15-5242-12696-tile.tif\n/tmp/test-untiler/15-5243-12696-tile.tif\n/tmp/test-untiler/15-5243-12697-tile.tif\n/tmp/test-untiler/15-5242-12697-tile.tif\n'
 
-    assert result.output == expected_scenes
-
     with rio.open('/tmp/test-untiler/15-5242-12697-tile.tif') as src:
         assert src.shape == (2048, 2048)
         assert src.count == 4
