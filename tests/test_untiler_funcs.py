@@ -86,8 +86,6 @@ def tests_templating_scene_template_fails():
 def tests_templating_scene_template_separator_fails():
     template = '{z}/{x}-{y}-source-2015-xyz.tif'
 
-    tile_utils.parse_template(template)
-
     with pytest.raises(ValueError):
         tile_utils.parse_template(template)
 
