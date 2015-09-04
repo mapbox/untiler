@@ -147,7 +147,7 @@ def streaming_tile_worker(data):
                             imdata = src.read()
 
                         imdata = make_image_array(imdata, globalArgs['tileResolution'])
-                        click.echo(imdata.shape, err=True)
+
                         imdata = upsample(imdata, fDiff, frFaux, toFaux)
 
                         window = make_window(x, y, fillbaseX, fillbaseY, globalArgs['tileResolution'] * fDiff)
