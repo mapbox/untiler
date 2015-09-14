@@ -176,7 +176,7 @@ def streaming_tile_worker(data):
             return filename
 
     except Exception as e:
-        click.echo("%s errored" % (path))
+        click.echo("%s errored" % (path), err=True)
         raise e
 
 def inspect_dir(inputDir, zoom, read_template):
