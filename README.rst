@@ -65,7 +65,7 @@ into ``mercantile shapes`` to visualize geometry:
 
     untiler inspectdir <dir> -z 19 | mercantile shapes | fio collect | geojsonio
 
-.. |Build Status| image:: https://magnum.travis-ci.com/mapbox/untiler.svg?token=Dkq56qQtBntqTfE3yeVy&branch=master
-   :target: https://magnum.travis-ci.com/mapbox/untiler
+.. |Build Status| image:: https://travis-ci.org/mapbox/untiler.svg?branch=master
+   :target: https://travis-ci.org/mapbox/untiler
 .. |Coverage Status| image:: https://coveralls.io/repos/mapbox/untiler/badge.svg?branch=master&service=github&t=nhModO
    :target: https://coveralls.io/github/mapbox/untiler?branch=master
