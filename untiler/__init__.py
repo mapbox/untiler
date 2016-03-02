@@ -13,6 +13,28 @@ from multiprocessing import Pool
 import untiler.scripts.tile_utils as tile_utils
 from rasterio.warp import reproject, RESAMPLING
 
+class ImgReader:
+    def __init__(self, path):
+        self.path = path
+        self.ftype = path.split('.')[-1]
+
+    def read(self):
+        if self.ftype == 'webp':
+            return self.reader.imread(self.path)
+        else:
+            return self.reader.read()
+
+    def __enter__(self):
+        if self.ftype == 'webp':
+            self.reader = imread
+        else:
+            self.reader = rio.open(self.path)
+        return self
+
+    def __exit__(self, ext_t, ext_v, trace):
+        if ext_t:
+            print("in __exit__")
+
 
 def make_affine(height, width, ul, lr):
     """
@@ -143,7 +165,7 @@ def streaming_tile_worker(data):
                         path = globalArgs['readTemplate'] % (z, x, y)
                         log += '%s %s %s\n' % (z, x, y)
 
-                        with rasterio.open(path) as src:
+                        with ImgReader(path) as src:
                             imdata = src.read()
 
                         imdata = make_image_array(imdata, globalArgs['tileResolution'])
