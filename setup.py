@@ -23,7 +23,8 @@ setup(name='untiler',
       install_requires=[
           'click',
           'rasterio',
-          'mercantile'
+          'mercantile',
+          'mbutil'
       ],
       extras_require={
           'test': ['pytest', 'pytest-cov'],
