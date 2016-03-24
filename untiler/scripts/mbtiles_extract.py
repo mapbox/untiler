@@ -16,13 +16,15 @@ def nostdout():
     sys.stdout = save_stdout
 
 class MBTileExtractor:
-    def __init__(self, path):
+    def __init__(self, path, subdir='tiles', scheme='xyz'):
         self.path = path
         self.tmpdir = tempfile.mkdtemp()
+        self.subdir = subdir
+        self.scheme = scheme
     def extract(self):
         with nostdout():
-            mbtiles_to_disk(self.path, os.path.join(self.tmpdir, 'tiles'), **{'scheme':'xyz'})
-        return os.path.join(self.tmpdir)
+            mbtiles_to_disk(self.path, os.path.join(self.tmpdir, self.subdir), **{'scheme': self.scheme})
+        return self.tmpdir
     def __enter__(self):
         return self
     def __exit__(self, ext_t, ext_v, trace):
