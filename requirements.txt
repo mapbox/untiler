@@ -1,1 +1,3 @@
-rasterio>=0.26
+rasterio
+mercantile
+mbutil
