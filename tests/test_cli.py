@@ -5,8 +5,6 @@ import os, shutil, mercantile, pytest
 import numpy as np
 import rasterio as rio
 
-from pprint import pprint
-
 
 class TestTiler:
     def __init__(self, path):
@@ -129,4 +127,25 @@ def test_diff_zooms():
 
     testtiles.cleanup()
 
+def test_extract_mbtiles():
+    testpath = '/tmp/' + ''.join(np.random.randint(0,9,10).astype(str))
+    testmbtiles = os.path.join(os.path.dirname(__file__), 'fixtures/testtiles.mbtiles')
+    os.mkdir(testpath)
+    runner = CliRunner()
+    result = runner.invoke(cli, ['streammbtiles', testmbtiles, testpath, '-z', '16', '-x', '-s', '{z}-{x}-{y}-mbtiles.tif', '--co', 'compress=lzw'])
+    assert result.exit_code == 0
+    expected_checksums = [[13858, 8288, 51489, 31223], [17927, 52775, 411, 9217]]
+    for o, c in zip(result.output.rstrip().split('\n'), expected_checksums):
+        with rio.open(o) as src:
+            checksums = [src.checksum(i) for i in src.indexes]
+            assert checksums == c
+    shutil.rmtree(testpath)
 
+def test_extract_mbtiles_fails():
+    testpath = '/tmp/' + ''.join(np.random.randint(0,9,10).astype(str))
+    testmbtiles = os.path.join(os.path.dirname(__file__), 'fixtures/bad.mbtiles')
+    os.mkdir(testpath)
+    runner = CliRunner()
+    result = runner.invoke(cli, ['streammbtiles', testmbtiles, testpath, '-z', '16', '-x', '-s', '{z}-{x}-{y}-mbtiles.tif', '--co', 'compress=lzw'])
+    assert result.exit_code == -1
+    shutil.rmtree(testpath)

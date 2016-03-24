@@ -8,7 +8,7 @@ with codecs_open('README.rst', encoding='utf-8') as f:
 
 
 setup(name='untiler',
-      version='0.0.5',
+      version='0.1.0',
       description=u"Combine image tiles into composite TIFs",
       long_description=long_description,
       classifiers=[],
@@ -23,7 +23,8 @@ setup(name='untiler',
       install_requires=[
           'click',
           'rasterio',
-          'mercantile'
+          'mercantile',
+          'mbutil'
       ],
       extras_require={
           'test': ['pytest', 'pytest-cov'],

@@ -18,7 +18,24 @@ cd untiler
 pip install -e .
 ```
 
-## Usage - streamdir
+## Usage
+
+```
+Usage: untiler [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  inspectdir
+  streamdir
+  streammbtiles
+```
+
+### `streamdir`
+
+Given a directory of tiles + a read template, mosaic into tifs at a lower parent "composite" zoom extent
+
 ```
 untiler streamdir [OPTIONS] INPUT_DIR OUTPUT_DIR
 
@@ -32,10 +49,33 @@ untiler streamdir [OPTIONS] INPUT_DIR OUTPUT_DIR
                            [default='{z}-{x}-{y}-tile.tif']
 -w, --workers INTEGER        Number of workers in the processing pool
                            [default=4]
+-x, --no-fill                Don't fill in with lower zooms
 --help                       Show this message and exit.
 ```
 
-## Usage - inspectdir
+### `streammbtiles`
+Mosaic an mbtiles into tifs of "composite" zoom extent
+```
+untiler streammbtiles [OPTIONS] MBTILES OUTPUT_DIR
+
+Options:
+  --co NAME=VALUE              Driver specific creation options.See the
+                               documentation for the selected output driver
+                               for more information.
+  -c, --compositezoom INTEGER  Tile size to mosaic into [default=13]
+  -z, --maxzoom INTEGER        Force a maxzom [default=max in each
+                               compositezoom area]
+  -s, --scenetemplate TEXT     Template for output scenetif filenames
+                               [default='{z}-{x}-{y}-tile.tif']
+  -w, --workers INTEGER        Number of workers in the processing pool
+                               [default=4]
+  -x, --no-fill                Don't fill in with lower zooms
+  --help                       Show this message and exit.
+```
+
+### `inspectdir`
+
+Stream `[x, y, z]`s of a directory
 
 ```
 untiler inspectdir [OPTIONS] INPUT_DIR
