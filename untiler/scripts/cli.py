@@ -34,7 +34,7 @@ def streamdir(input_dir, output_dir, compositezoom, maxzoom, logdir, readtemplat
 cli.add_command(streamdir)
 
 @click.command()
-@click.argument('input_dir', type=click.Path(exists=True))
+@click.argument('mbtiles', type=click.Path(exists=True))
 @click.argument('output_dir', type=click.Path(exists=True))
 @creation_options
 @click.option('--compositezoom', '-c', default=13, type=int,
@@ -44,8 +44,8 @@ cli.add_command(streamdir)
 @click.option('--scenetemplate', '-s', default="{z}-{x}-{y}-tile.tif", help="Template for output scenetif filenames [default='{z}-{x}-{y}-tile.tif']")
 @click.option('--workers', '-w', default=4, help="Number of workers in the processing pool [default=4]")
 @click.option('--no-fill', '-x', is_flag=True, help="Don't fill in with lower zooms")
-def streammbtiles(input_dir, output_dir, compositezoom, maxzoom, creation_options, scenetemplate, workers, no_fill):
-    with MBTileExtractor(input_dir) as mbtmp:
+def streammbtiles(mbtiles, output_dir, compositezoom, maxzoom, creation_options, scenetemplate, workers, no_fill):
+    with MBTileExtractor(mbtiles) as mbtmp:
         input_tile_dir = mbtmp.extract()
         with open(os.path.join(input_tile_dir, 'tiles', 'metadata.json')) as ofile:
             metadata = json.loads(ofile.read())

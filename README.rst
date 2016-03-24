@@ -28,8 +28,26 @@ Dev installation
 
     pip install -e .
 
-Usage - streamdir
------------------
+Usage
+-----
+
+::
+
+    Usage: untiler [OPTIONS] COMMAND [ARGS]...
+
+    Options:
+      --help  Show this message and exit.
+
+    Commands:
+      inspectdir
+      streamdir
+      streammbtiles
+
+``streamdir``
+~~~~~~~~~~~~~
+
+Given a directory of tiles + a read template, mosaic into tifs at a
+lower parent "composite" zoom extent
 
 ::
 
@@ -45,25 +63,50 @@ Usage - streamdir
                                [default='{z}-{x}-{y}-tile.tif']
     -w, --workers INTEGER        Number of workers in the processing pool
                                [default=4]
+    -x, --no-fill                Don't fill in with lower zooms
     --help                       Show this message and exit.
 
-Usage - inspectdir
-------------------
+``streammbtiles``
+~~~~~~~~~~~~~~~~~
+
+Mosaic an mbtiles into tifs of "composite" zoom extent
 
 ::
 
-    untiler inspectdir [OPTIONS] INPUT_DIR
+    untiler streammbtiles [OPTIONS] MBTILES OUTPUT_DIR
 
     Options:
-    -z, --zoom INTEGER  Zoom to inspect [default = all]
-    --help              Show this message and exit.
+      --co NAME=VALUE              Driver specific creation options.See the
+                                   documentation for the selected output driver
+                                   for more information.
+      -c, --compositezoom INTEGER  Tile size to mosaic into [default=13]
+      -z, --maxzoom INTEGER        Force a maxzom [default=max in each
+                                   compositezoom area]
+      -s, --scenetemplate TEXT     Template for output scenetif filenames
+                                   [default='{z}-{x}-{y}-tile.tif']
+      -w, --workers INTEGER        Number of workers in the processing pool
+                                   [default=4]
+      -x, --no-fill                Don't fill in with lower zooms
+      --help                       Show this message and exit.
 
-Outputs a line-delimited stream of tile ``[x, y, z]``\ s; useful to pipe
-into ``mercantile shapes`` to visualize geometry:
+    ### `inspectdir`
+
+untiler inspectdir [OPTIONS] INPUT\_DIR
+
+Options: -z, --zoom INTEGER Zoom to inspect [default = all] --help Show
+this message and exit.
 
 ::
 
-    untiler inspectdir <dir> -z 19 | mercantile shapes | fio collect | geojsonio
+    Outputs a line-delimited stream of tile `[x, y, z]`s; useful to pipe into `mercantile shapes` to visualize geometry:
+
+untiler inspectdir
+
+.. raw:: html
+
+   <dir>
+
+-z 19 \| mercantile shapes \| fio collect \| geojsonio \`\`\`
 
 .. |Build Status| image:: https://travis-ci.org/mapbox/untiler.svg?branch=master
    :target: https://travis-ci.org/mapbox/untiler
