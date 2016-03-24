@@ -89,24 +89,25 @@ Mosaic an mbtiles into tifs of "composite" zoom extent
       -x, --no-fill                Don't fill in with lower zooms
       --help                       Show this message and exit.
 
-    ### `inspectdir`
+``inspectdir``
+~~~~~~~~~~~~~~
 
-untiler inspectdir [OPTIONS] INPUT\_DIR
-
-Options: -z, --zoom INTEGER Zoom to inspect [default = all] --help Show
-this message and exit.
+Stream ``[x, y, z]``\ s of a directory
 
 ::
 
-    Outputs a line-delimited stream of tile `[x, y, z]`s; useful to pipe into `mercantile shapes` to visualize geometry:
+    untiler inspectdir [OPTIONS] INPUT_DIR
 
-untiler inspectdir
+    Options:
+    -z, --zoom INTEGER  Zoom to inspect [default = all]
+    --help              Show this message and exit.
 
-.. raw:: html
+Outputs a line-delimited stream of tile ``[x, y, z]``\ s; useful to pipe
+into ``mercantile shapes`` to visualize geometry:
 
-   <dir>
+::
 
--z 19 \| mercantile shapes \| fio collect \| geojsonio \`\`\`
+    untiler inspectdir <dir> -z 19 | mercantile shapes | fio collect | geojsonio
 
 .. |Build Status| image:: https://travis-ci.org/mapbox/untiler.svg?branch=master
    :target: https://travis-ci.org/mapbox/untiler

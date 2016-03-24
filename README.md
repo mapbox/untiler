@@ -71,8 +71,11 @@ Options:
                                [default=4]
   -x, --no-fill                Don't fill in with lower zooms
   --help                       Show this message and exit.
+```
 
 ### `inspectdir`
+
+Stream `[x, y, z]`s of a directory
 
 ```
 untiler inspectdir [OPTIONS] INPUT_DIR
