@@ -39,7 +39,7 @@ def upsample(rgb, up, fr, to):
 
     return up_rgb
 
-def make_src_meta(bounds, size):
+def make_src_meta(bounds, size, creation_opts={}):
     """
     Create metadata for output tiles
     """
@@ -49,6 +49,7 @@ def make_src_meta(bounds, size):
 
     aff = make_affine(size, size, ul, lr)
 
+    ## default values
     src_meta = {
         'driver': 'GTiff',
         'height': size,
@@ -62,6 +63,10 @@ def make_src_meta(bounds, size):
         'blockxsize': 256,
         'blockysize': 256
     }
+
+    for c in creation_opts.keys():
+        src_meta[c] = creation_opts[c]
+
     return src_meta
 
 
@@ -87,11 +92,16 @@ def make_image_array(imdata, outputSize):
     try:
         depth, width, height = imdata.shape
 
+        if depth == 4:
+            alpha = imdata[3]
+        else:
+            alpha = np.zeros((outputSize, outputSize), dtype=np.uint8) + 255
+
         return np.array([
             imdata[0 % depth, :, :],
             imdata[1 % depth, :, :],
             imdata[2 % depth, :, :],
-            np.zeros((outputSize, outputSize), dtype=np.uint8) + 255
+            alpha
         ])
     except Exception as e:
         raise e
@@ -118,7 +128,7 @@ def logwriter(openLogFile, writeObj):
 
 def streaming_tile_worker(data):
     size = 2 ** (data['zMax'] - globalArgs['compositezoom']) * globalArgs['tileResolution']
-    out_meta = make_src_meta(merc.bounds(data['x'], data['y'], data['z']), size)
+    out_meta = make_src_meta(merc.bounds(data['x'], data['y'], data['z']), size, globalArgs['creation_opts'])
     filename = globalArgs['sceneTemplate'] % (data['z'], data['x'], data['y'])
     subtiler = tile_utils.TileUtils()
     log = 'FILE: %s\n' % filename
@@ -137,21 +147,23 @@ def streaming_tile_worker(data):
 
                     toFaux, frFaux = affaux(fDiff)
 
-                    ## Read and write the fill tiles first
-                    for t in subtiler.get_fill_super_tiles(superTiles, data['maxCovTiles'], fThresh):
-                        z, x, y = t
-                        path = globalArgs['readTemplate'] % (z, x, y)
-                        log += '%s %s %s\n' % (z, x, y)
+                    if not globalArgs['no_fill']:
+                        print('filling')
+                        ## Read and write the fill tiles first
+                        for t in subtiler.get_fill_super_tiles(superTiles, data['maxCovTiles'], fThresh):
+                            z, x, y = t
+                            path = globalArgs['readTemplate'] % (z, x, y)
+                            log += '%s %s %s\n' % (z, x, y)
 
-                        with rasterio.open(path) as src:
-                            imdata = src.read()
+                            with rasterio.open(path) as src:
+                                imdata = src.read()
 
-                        imdata = make_image_array(imdata, globalArgs['tileResolution'])
+                            imdata = make_image_array(imdata, globalArgs['tileResolution'])
 
-                        imdata = upsample(imdata, fDiff, frFaux, toFaux)
+                            imdata = upsample(imdata, fDiff, frFaux, toFaux)
 
-                        window = make_window(x, y, fillbaseX, fillbaseY, globalArgs['tileResolution'] * fDiff)
-                        dst.write(imdata, window=window)
+                            window = make_window(x, y, fillbaseX, fillbaseY, globalArgs['tileResolution'] * fDiff)
+                            dst.write(imdata, window=window)
 
 
                 baseX, baseY = subtiler.get_sub_base_zoom(data['x'], data['y'], data['z'], data['zMax'])
@@ -194,7 +206,7 @@ def inspect_dir(inputDir, zoom, read_template):
         z, x, y = t
         click.echo([x, y, z])
 
-def stream_dir(inputDir, outputDir, compositezoom, maxzoom, logdir, read_template, scene_template, workers):
+def stream_dir(inputDir, outputDir, compositezoom, maxzoom, logdir, read_template, scene_template, workers, creation_opts, no_fill):
     tiler = tile_utils.TileUtils()
 
     allFiles = tiler.search_dir(inputDir)
@@ -222,7 +234,9 @@ def stream_dir(inputDir, outputDir, compositezoom, maxzoom, logdir, read_templat
         'compositezoom': compositezoom,
         'fileTemplate': '%s/%s_%s_%s_%s.tif',
         'sceneTemplate': sceneTemplate,
-        'logdir': logdir
+        'logdir': logdir,
+        'creation_opts': creation_opts,
+        'no_fill': no_fill
         }))
 
     superTiles = tiler.get_super_tiles(allTiles, compositezoom)

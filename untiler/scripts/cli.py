@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
-import os, tarfile, re
+import os, re
 
 import click, mercantile
+from rasterio.rio.options import creation_options
 
 import untiler
 
@@ -13,6 +14,7 @@ def cli():
 @click.command()
 @click.argument('input_dir', type=click.Path(exists=True))
 @click.argument('output_dir', type=click.Path(exists=True))
+@creation_options
 @click.option('--compositezoom', '-c', default=13, type=int,
     help='Tile size to mosaic into [default=13]')
 @click.option('--maxzoom', '-z', default=None, type=int,
@@ -21,8 +23,9 @@ def cli():
 @click.option('--readtemplate', '-t', default="jpg/{z}/{x}/{y}.jpg", help="File path template [default='jpg/{z}/{x}/{y}.jpg']")
 @click.option('--scenetemplate', '-s', default="{z}-{x}-{y}-tile.tif", help="Template for output scenetif filenames [default='{z}-{x}-{y}-tile.tif']")
 @click.option('--workers', '-w', default=4, help="Number of workers in the processing pool [default=4]")
-def streamdir(input_dir, output_dir, compositezoom, maxzoom, logdir, readtemplate, scenetemplate, workers):
-    untiler.stream_dir(input_dir, output_dir, compositezoom, maxzoom, logdir, readtemplate, scenetemplate, workers)
+@click.option('--no-fill', '-x', is_flag=True, help="Don't fill in with lower zooms")
+def streamdir(input_dir, output_dir, compositezoom, maxzoom, logdir, readtemplate, scenetemplate, workers, creation_options, no_fill):
+    untiler.stream_dir(input_dir, output_dir, compositezoom, maxzoom, logdir, readtemplate, scenetemplate, workers, creation_options, no_fill)
 
 cli.add_command(streamdir)
 
