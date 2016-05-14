@@ -117,8 +117,8 @@ class TileUtils:
                 'z': z
             })
 
-    def filter_tiles(self, tiles, zoomfloor):
-        return tiles[np.where(tiles[:, 0] <= zoomfloor)]
+    def filter_tiles(self, tiles, zoomfloor, zoomceil):
+        return tiles[np.where((tiles[:, 0] <= zoomfloor) & (tiles[:, 0] >= zoomceil))]
 
     def get_fill_super_tiles(self, superTiles, fillTiles, fillThresh):
         for ct in ((np.all(superTiles == a, axis=1).sum(), a) for a in fillTiles):
@@ -141,7 +141,7 @@ def parse_template(template):
     if pattern.match(template):    
         valPattern = re.compile(r"{(z|x|y)}")
         filepath = re.compile(r"(jpg|png|tif)$")
-        sepmatch = re.compile(r"(?:{z})(/|-)(?:{x})(/|-)(?:{y})")
+        sepmatch = re.compile(r"(?:{z})(/|-|_)(?:{x})(/|-|_)(?:{y})")
         separator = sepmatch.findall(template)[0]
 
         if len(separator) != 2 or separator[0] != separator[1]:

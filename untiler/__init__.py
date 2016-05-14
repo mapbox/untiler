@@ -148,7 +148,6 @@ def streaming_tile_worker(data):
                     toFaux, frFaux = affaux(fDiff)
 
                     if not globalArgs['no_fill']:
-                        print('filling')
                         ## Read and write the fill tiles first
                         for t in subtiler.get_fill_super_tiles(superTiles, data['maxCovTiles'], fThresh):
                             z, x, y = t
@@ -219,7 +218,7 @@ def stream_dir(inputDir, outputDir, compositezoom, maxzoom, logdir, read_templat
         raise ValueError("No tiles were found for that template")
 
     if maxzoom:
-        allTiles = tiler.filter_tiles(allTiles, maxzoom)
+        allTiles = tiler.filter_tiles(allTiles, maxzoom, compositezoom)
 
     if allTiles.shape[0] == 0:
         raise ValueError("No tiles were found below that maxzoom")
@@ -237,7 +236,7 @@ def stream_dir(inputDir, outputDir, compositezoom, maxzoom, logdir, read_templat
         'logdir': logdir,
         'creation_opts': creation_opts,
         'no_fill': no_fill
-        }))
+        })) 
 
     superTiles = tiler.get_super_tiles(allTiles, compositezoom)
 
