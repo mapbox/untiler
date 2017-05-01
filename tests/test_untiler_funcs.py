@@ -209,8 +209,7 @@ def test_upsampling():
 
     test = np.zeros((3, rShape, rShape))
 
-    with rasterio.drivers():
-        outputUp = untiler.upsample(test, rUp, frFaux, toFaux)
+    outputUp = untiler.upsample(test, rUp, frFaux, toFaux)
 
     assert outputUp.shape == (3, rUp * rShape, rUp * rShape)
 
