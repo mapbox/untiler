@@ -6,12 +6,12 @@ from mbutil import mbtiles_to_disk
 
 import contextlib
 import sys
-import cStringIO
+from io import StringIO
 
 @contextlib.contextmanager
 def nostdout():
     save_stdout = sys.stdout
-    sys.stdout = cStringIO.StringIO()
+    sys.stdout = StringIO()
     yield
     sys.stdout = save_stdout
 
