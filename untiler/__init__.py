@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from __future__ import with_statement
 from __future__ import print_function
+from __future__ import division
 import os
 from multiprocessing import Pool
 
@@ -137,7 +138,8 @@ def logwriter(openLogFile, writeObj):
 def streaming_tile_worker(data):
     size = 2 ** (data['zMax'] - globalArgs['compositezoom']) * globalArgs['tileResolution']
     out_meta = make_src_meta(merc.bounds(data['x'], data['y'], data['z']), size, globalArgs['creation_opts'])
-    filename = globalArgs['sceneTemplate'] % (data['z'], data['x'], data['y'])
+    z, x, y = [int(i) for i in (data['z'], data['x'], data['y'])]
+    filename = globalArgs['sceneTemplate'] % (z, x, y)
     subtiler = tile_utils.TileUtils()
     log = 'FILE: %s\n' % filename
     try:
@@ -158,7 +160,7 @@ def streaming_tile_worker(data):
                     print('filling')
                     ## Read and write the fill tiles first
                     for t in subtiler.get_fill_super_tiles(superTiles, data['maxCovTiles'], fThresh):
-                        z, x, y = t
+                        z, x, y = [int(i) for i in t]
                         path = globalArgs['readTemplate'] % (z, x, y)
                         log += '%s %s %s\n' % (z, x, y)
 
@@ -176,7 +178,7 @@ def streaming_tile_worker(data):
             baseX, baseY = subtiler.get_sub_base_zoom(data['x'], data['y'], data['z'], data['zMax'])
 
             for t in data['zMaxTiles']:
-                z, x, y = t
+                z, x, y = [int(i) for i in t]
                 path = globalArgs['readTemplate'] % (z, x, y)
                 log += '%s %s %s\n' % (z, x, y)
 

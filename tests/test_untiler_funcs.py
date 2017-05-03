@@ -1,14 +1,17 @@
 #!/usr/bin/env python
+import json
+import pickle
+import os
 
 import pytest
-import untiler
-from untiler.scripts import tile_utils
-
 import numpy as np
-import json, pickle, os
 import mercantile as merc
 import inspect
 import rasterio
+
+import untiler
+from untiler.scripts import tile_utils
+
 
 def test_templating_good_jpg():
     print("")
@@ -170,7 +173,7 @@ def test_affine():
 
 @pytest.fixture
 def expectedMeta():
-    with open('tests/expected/src_meta.pkl') as pklfile:
+    with open('tests/expected/src_meta.pkl', mode='rb') as pklfile:
         return pickle.load(pklfile)
 
 

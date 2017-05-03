@@ -1,3 +1,4 @@
+from __future__ import division
 import numpy as np
 import re
 from collections import OrderedDict
@@ -46,7 +47,7 @@ class TileUtils:
         if np.any(subTiles[:, 0] < zoom):
             raise ValueError("Cannot get super tiles of tile array w/ smaller zoom")
         zoomdiffs = 2 ** (subTiles[:, 0] - zoom)
-        superTiles = subTiles / np.vstack(zoomdiffs)
+        superTiles = subTiles // np.vstack(zoomdiffs)
         superTiles[:,0] = zoom
 
         return superTiles
