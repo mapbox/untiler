@@ -6,9 +6,10 @@ import click, mercantile, json
 from rasterio.rio.options import creation_options
 
 import untiler
+import numpy as np
 
 from untiler import tarstream
-
+import untiler.scripts.tile_utils as tile_utils
 from untiler.scripts.mbtiles_extract import MBTileExtractor
 
 @click.group()
@@ -70,14 +71,25 @@ cli.add_command(inspectdir)
 
 @click.command()
 @click.argument('tar', type=click.Path(exists=True))
-def inspectar(tar):
+@click.option('--compositezoom', default=None, type=int,
+    help='Print out parent tiles at the composite level')
+def inspectar(tar, compositezoom):
+    tiler = tile_utils.TileUtils()
     index = tarstream._index(tar)
 
     tiles = (tarstream._parse_path(p) for p in index.keys())
 
+    tiles = np.array([t for t in tiles if t is not None])
+
+    if compositezoom is not None:
+        compositezoom = compositezoom
+        tiles = tiler.get_unique_tiles(tiler.get_super_tiles(tiles, compositezoom))
+
     for t in tiles:
         if t is not None:
-            click.echo(json.dumps(t))
+            tile = t.tolist()
+            tile.append(tile.pop(0))
+            click.echo(json.dumps(tile))
 
 cli.add_command(inspectar)
 
