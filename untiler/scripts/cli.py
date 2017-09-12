@@ -7,6 +7,8 @@ from rasterio.rio.options import creation_options
 
 import untiler
 
+from untiler import tarstream
+
 from untiler.scripts.mbtiles_extract import MBTileExtractor
 
 @click.group()
@@ -64,6 +66,20 @@ def inspectdir(input_dir, zoom, readtemplate):
     untiler.inspect_dir(input_dir, zoom, readtemplate)
 
 cli.add_command(inspectdir)
+
+
+@click.command()
+@click.argument('tar', type=click.Path(exists=True))
+def inspectar(tar):
+    index = tarstream._index(tar)
+
+    tiles = (tarstream._parse_path(p) for p in index.keys())
+
+    for t in tiles:
+        if t is not None:
+            click.echo(json.dumps(t))
+
+cli.add_command(inspectar)
 
 if __name__ == "__main__":
     cli()
