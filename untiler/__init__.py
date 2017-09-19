@@ -18,6 +18,8 @@ except ImportError:
 
 import untiler.scripts.tile_utils as tile_utils
 
+from untiler import tarstream
+
 
 def make_affine(height, width, ul, lr):
     """
@@ -134,6 +136,10 @@ def logwriter(openLogFile, writeObj):
         print(writeObj, file=openLogFile)
         return
 
+def _localworker(path):
+    with rasterio.open(path) as src:
+        return src.read()
+
 
 def streaming_tile_worker(data):
     size = 2 ** (data['zMax'] - globalArgs['compositezoom']) * globalArgs['tileResolution']
@@ -142,6 +148,7 @@ def streaming_tile_worker(data):
     filename = globalArgs['sceneTemplate'] % (z, x, y)
     subtiler = tile_utils.TileUtils()
     log = 'FILE: %s\n' % filename
+    _file_reader = globalArgs.get('file_reader', _localworker)
     try:
         with rasterio.open(filename, 'w', **out_meta) as dst:
             if data['zMaxCov']:
@@ -157,15 +164,14 @@ def streaming_tile_worker(data):
                 toFaux, frFaux = affaux(fDiff)
 
                 if not globalArgs['no_fill']:
-                    print('filling')
+
                     ## Read and write the fill tiles first
                     for t in subtiler.get_fill_super_tiles(superTiles, data['maxCovTiles'], fThresh):
                         z, x, y = [int(i) for i in t]
                         path = globalArgs['readTemplate'] % (z, x, y)
                         log += '%s %s %s\n' % (z, x, y)
 
-                        with rasterio.open(path) as src:
-                            imdata = src.read()
+                        imdata = _file_reader(path)
 
                         imdata = make_image_array(imdata, globalArgs['tileResolution'])
 
@@ -182,8 +188,7 @@ def streaming_tile_worker(data):
                 path = globalArgs['readTemplate'] % (z, x, y)
                 log += '%s %s %s\n' % (z, x, y)
 
-                with rasterio.open(path) as src:
-                    imdata = src.read()
+                imdata = _file_reader(path)
 
                 imdata = make_image_array(imdata, globalArgs['tileResolution'])
 
@@ -224,6 +229,8 @@ def stream_dir(inputDir, outputDir, compositezoom, maxzoom, logdir, read_templat
 
     template, readTemplate, separator = tile_utils.parse_template("%s/%s" % (inputDir, read_template))
 
+    print(readTemplate)
+
     allTiles = np.array([i for i in tiler.get_tiles(allFiles, template, separator)])
 
     if allTiles.shape[0] == 0 or allTiles.shape[1] != 3:
@@ -258,6 +265,47 @@ def stream_dir(inputDir, outputDir, compositezoom, maxzoom, logdir, read_templat
     pool.close()
     pool.join()
 
+def streamtar(input_tar, outputDir, compositezoom, maxzoom, logdir, read_template, scene_template, workers, creation_opts, no_fill):
+    tiler = tile_utils.TileUtils()
+    TS = tarstream.TarStream(input_tar)
+    index = TS.index()
+
+    readtemplate = tarstream._get_template(index)
+
+    tiles = (tarstream._parse_path(p) for p in index.keys())
+
+    tiles = np.array([t for t in tiles if t is not None])
+    if tiles.shape[0] == 0 or tiles.shape[1] != 3:
+        raise ValueError("No tiles were found for that template")
+    if maxzoom:
+        tiles = tiler.filter_tiles(tiles, maxzoom)
+
+    if tiles.shape[0] == 0:
+        raise ValueError("No tiles were found below that maxzoom")
+
+    _, sceneTemplate, _ = tile_utils.parse_template("%s/%s" % (outputDir, scene_template))
+
+    pool = Pool(workers, global_setup, (input_tar, {
+        'maxzoom': maxzoom,
+        'readTemplate': readtemplate,
+        'outputDir': outputDir,
+        'tileResolution': 256,
+        'compositezoom': compositezoom,
+        'fileTemplate': '%s/%s_%s_%s_%s.tif',
+        'sceneTemplate': sceneTemplate,
+        'logdir': logdir,
+        'creation_opts': creation_opts,
+        'no_fill': no_fill,
+        'file_reader': TS.read
+        }))
+
+    superTiles = tiler.get_super_tiles(tiles, compositezoom)
+
+    for p in pool.imap_unordered(streaming_tile_worker, tiler.get_sub_tiles(tiles, superTiles)):
+        click.echo(p)
+
+    pool.close()
+    pool.join()
 
 if __name__ == "__main__":
     stream_dir()
