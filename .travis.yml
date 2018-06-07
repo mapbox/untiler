@@ -54,3 +54,12 @@ script:
 
 after_success:
   - coveralls
+
+deploy:
+  provider: pypi
+  user: mapbox
+  on:
+    repo: mapbox/untiler
+    python: 3.6
+    tags: true
+  distributions: sdist bdist_wheel
