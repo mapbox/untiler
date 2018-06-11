@@ -4,23 +4,39 @@
 
 Utility to take a directory of `{z}/{x}/{y}.(jpg|png)` tiles, and stitch into a scenetiff (`tif` w/ exact merc tile bounds). Future versions will support fast indexed reading directly from `tar` archives.
 
+<!-- toc -->
+
+- [Install](#install)
+- [Tests](#tests)
+- [Contributing](#contributing)
+- [Usage](#usage)
+  * [`streamdir`](#streamdir)
+  * [`streammbtiles`](#streammbtiles)
+  * [`inspectdir`](#inspectdir)
+
+<!-- tocstop -->
+
 ## Install
-make a virtual env + activate, then:
-```
-pip install untiler
-```
-## Dev installation
-```
-git clone git@github.com:mapbox/untiler.git
 
-cd untiler
+Create and activate a virtual environment, then:
 
-pip install -e .
+```sh
+$ make install
 ```
+
+## Tests
+
+```sh
+$ make test
+```
+
+## Contributing
+
+See [**CONTRIBUTING.md**](./CONTRIBUTING.md) for guidance on our release process.
 
 ## Usage
 
-```
+```sh
 Usage: untiler [OPTIONS] COMMAND [ARGS]...
 
 Options:
@@ -36,7 +52,7 @@ Commands:
 
 Given a directory of tiles + a read template, mosaic into tifs at a lower parent "composite" zoom extent
 
-```
+```sh
 untiler streamdir [OPTIONS] INPUT_DIR OUTPUT_DIR
 
 -c, --compositezoom INTEGER  Tile size to mosaic into [default=13]
@@ -54,8 +70,10 @@ untiler streamdir [OPTIONS] INPUT_DIR OUTPUT_DIR
 ```
 
 ### `streammbtiles`
+
 Mosaic an mbtiles into tifs of "composite" zoom extent
-```
+
+```sh
 untiler streammbtiles [OPTIONS] MBTILES OUTPUT_DIR
 
 Options:
@@ -77,14 +95,16 @@ Options:
 
 Stream `[x, y, z]`s of a directory
 
-```
+```sh
 untiler inspectdir [OPTIONS] INPUT_DIR
 
 Options:
 -z, --zoom INTEGER  Zoom to inspect [default = all]
 --help              Show this message and exit.
 ```
+
 Outputs a line-delimited stream of tile `[x, y, z]`s; useful to pipe into `mercantile shapes` to visualize geometry:
+
 ```
 untiler inspectdir <dir> -z 19 | mercantile shapes | fio collect | geojsonio
 ```
