@@ -217,7 +217,7 @@ def inspect_dir(inputDir, zoom, read_template):
         click.echo([x, y, z])
 
 
-def stream_dir(inputDir, outputDir, compositezoom, maxzoom, logdir, read_template, scene_template, workers, creation_opts, no_fill):
+def stream_dir(inputDir, outputDir, compositezoom, maxzoom, logdir, read_template, scene_template, workers, creation_opts, no_fill, tile_resolution=256):
     tiler = tile_utils.TileUtils()
 
     allFiles = tiler.search_dir(inputDir)
@@ -241,7 +241,7 @@ def stream_dir(inputDir, outputDir, compositezoom, maxzoom, logdir, read_templat
         'maxzoom': maxzoom,
         'readTemplate': readTemplate,
         'outputDir': outputDir,
-        'tileResolution': 256,
+        'tileResolution': tile_resolution,
         'compositezoom': compositezoom,
         'fileTemplate': '%s/%s_%s_%s_%s.tif',
         'sceneTemplate': sceneTemplate,
