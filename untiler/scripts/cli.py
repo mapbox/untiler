@@ -26,10 +26,11 @@ def cli():
 @click.option('--scenetemplate', '-s', default="{z}-{x}-{y}-tile.tif", help="Template for output scenetif filenames [default='{z}-{x}-{y}-tile.tif']")
 @click.option('--workers', '-w', default=4, help="Number of workers in the processing pool [default=4]")
 @click.option('--no-fill', '-x', is_flag=True, help="Don't fill in with lower zooms")
-def streamdir(input_dir, output_dir, compositezoom, maxzoom, logdir, readtemplate, scenetemplate, workers, creation_options, no_fill):
+@click.option('--tile-resolution', '-r', default=256, help="Input tiles' size.")
+def streamdir(input_dir, output_dir, compositezoom, maxzoom, logdir, readtemplate, scenetemplate, workers, creation_options, no_fill, tile_resolution):
     # with MBTileExtractor(input_dir) as mbtmp:
     #     print mbtmp.extract()
-    untiler.stream_dir(input_dir, output_dir, compositezoom, maxzoom, logdir, readtemplate, scenetemplate, workers, creation_options, no_fill)
+    untiler.stream_dir(input_dir, output_dir, compositezoom, maxzoom, logdir, readtemplate, scenetemplate, workers, creation_options, no_fill, tile_resolution)
 
 cli.add_command(streamdir)
 
