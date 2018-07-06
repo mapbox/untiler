@@ -65,7 +65,7 @@ class TileUtils:
         return uniq
 
 
-    def get_zoom_tiles(self, subTiles, superTiles, tile, tilefloor=16):
+    def get_zoom_tiles(self, subTiles, superTiles, tile, tilefloor=15):
         """
         Given:
         (1) an array of [z, x, y] sub tiles at multiple zooms;
