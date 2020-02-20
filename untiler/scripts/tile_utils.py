@@ -148,7 +148,7 @@ def parse_template(template):
         if len(separator) != 2 or separator[0] != separator[1]:
             raise ValueError('Too many / not matching separators!')
     
-        return valPattern.sub(r"\d+", template), valPattern.sub(r"%s", template), separator[0]
+        return valPattern.sub(r"\d+", template), valPattern.sub("%s", template), separator[0]
     else:
         raise ValueError('Invalid template "%s"' % (template))
 
