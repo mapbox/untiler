@@ -105,7 +105,7 @@ def expectedTileList():
         return np.array(json.load(ofile))
 
 def test_parse_tiles(inputTilenames, expectedTileList):
-    matchTemplate = '3857_9_83_202_20130517_242834/jpg/\d+/\d+/\d+.jpg'
+    matchTemplate = r'3857_9_83_202_20130517_242834/jpg/\d+/\d+/\d+.jpg'
 
     tiler = tile_utils.TileUtils()
 
