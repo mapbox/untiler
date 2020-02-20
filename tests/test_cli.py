@@ -7,7 +7,7 @@ import mercantile
 import numpy as np
 import pytest
 import rasterio as rio
-
+import sqlite3
 from untiler.scripts.cli import cli
 
 
@@ -88,7 +88,8 @@ def test_cli_streamdir_mixed_ok_poo():
         tmp = testtiles.path
         runner = CliRunner()
         result = runner.invoke(cli, ['streamdir', tmp, tmp, '-c', '14', '-t', 'poo/{z}/{z}/{z}.jpg'])
-        assert result.exit_code == -1
+
+        assert result.exc_info[0] == ValueError
 
 
 def test_cli_baddir_fails():
@@ -154,4 +155,5 @@ def test_extract_mbtiles_fails():
         result = runner.invoke(cli, [
             'streammbtiles', testmbtiles, testpath, '-z', '16', '-x', '-s',
             '{z}-{x}-{y}-mbtiles.tif', '--co', 'compress=lzw'])
-        assert result.exit_code == -1
+
+        assert result.exc_info[0] == sqlite3.OperationalError
