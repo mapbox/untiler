@@ -27,7 +27,7 @@ python:
 addons:
   apt:
     packages:
-    - libgdal1h
+    - libgdal1i
     - gdal-bin
     - libgdal-dev
     - libatlas-dev
