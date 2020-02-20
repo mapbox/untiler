@@ -148,7 +148,7 @@ def test_extract_mbtiles():
             with rio.open(o) as src:
                 checksums.append([src.checksum(i) for i in src.indexes])
 
-        assert checksums == expected_checksums
+        assert sorted(checksums) == sorted(expected_checksums)
 
 
 def test_extract_mbtiles_fails():
@@ -156,6 +156,7 @@ def test_extract_mbtiles_fails():
         testpath = tt.path
         testmbtiles = os.path.join(os.path.dirname(__file__), 'fixtures/bad.mbtiles')
         runner = CliRunner()
+
         result = runner.invoke(cli, [
             'streammbtiles', testmbtiles, testpath, '-z', '16', '-x', '-s',
             '{z}-{x}-{y}-mbtiles.tif', '--co', 'compress=lzw'])
