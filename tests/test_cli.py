@@ -140,11 +140,15 @@ def test_extract_mbtiles():
             'streammbtiles', testmbtiles, testpath, '-z', '16', '-x', '-s',
             '{z}-{x}-{y}-mbtiles.tif', '--co', 'compress=lzw'])
         assert result.exit_code == 0
+
         expected_checksums = [[13858, 8288, 51489, 31223], [17927, 52775, 411, 9217]]
-        for o, c in zip(result.output.rstrip().split('\n'), expected_checksums):
+        checksums = []
+
+        for o in result.output.rstrip().split('\n'):
             with rio.open(o) as src:
-                checksums = [src.checksum(i) for i in src.indexes]
-                assert checksums == c
+                checksums.append([src.checksum(i) for i in src.indexes])
+
+        assert checksums == expected_checksums
 
 
 def test_extract_mbtiles_fails():
