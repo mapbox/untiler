@@ -222,7 +222,7 @@ def stream_dir(inputDir, outputDir, compositezoom, maxzoom, logdir, read_templat
 
     allFiles = tiler.search_dir(inputDir)
 
-    template, readTemplate, separator = tile_utils.parse_template(r"%s/%s" % (inputDir, read_template))
+    template, readTemplate, separator = tile_utils.parse_template("%s/%s" % (inputDir, read_template))
 
     allTiles = np.array([i for i in tiler.get_tiles(allFiles, template, separator)])
 
