@@ -33,7 +33,7 @@ install:
   - "pip wheel -r requirements.txt"
   # Actually install our dependencies now, this will pull from the directory
   # that the first command placed the Wheels into.
-  - "pip install --no-binary rasterio -r requirements.txt"
+  - "pip install -r requirements.txt"
   - "pip install coveralls"
   - "pip install -e .[test]"
 
