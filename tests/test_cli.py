@@ -7,7 +7,7 @@ import mercantile
 import numpy as np
 import pytest
 import rasterio as rio
-
+import sqlite3
 from untiler.scripts.cli import cli
 
 
@@ -88,7 +88,8 @@ def test_cli_streamdir_mixed_ok_poo():
         tmp = testtiles.path
         runner = CliRunner()
         result = runner.invoke(cli, ['streamdir', tmp, tmp, '-c', '14', '-t', 'poo/{z}/{z}/{z}.jpg'])
-        assert result.exit_code == -1
+
+        assert result.exc_info[0] == ValueError
 
 
 def test_cli_baddir_fails():
@@ -139,11 +140,15 @@ def test_extract_mbtiles():
             'streammbtiles', testmbtiles, testpath, '-z', '16', '-x', '-s',
             '{z}-{x}-{y}-mbtiles.tif', '--co', 'compress=lzw'])
         assert result.exit_code == 0
+
         expected_checksums = [[13858, 8288, 51489, 31223], [17927, 52775, 411, 9217]]
-        for o, c in zip(result.output.rstrip().split('\n'), expected_checksums):
+        checksums = []
+
+        for o in result.output.rstrip().split('\n'):
             with rio.open(o) as src:
-                checksums = [src.checksum(i) for i in src.indexes]
-                assert checksums == c
+                checksums.append([src.checksum(i) for i in src.indexes])
+
+        assert sorted(checksums) == sorted(expected_checksums)
 
 
 def test_extract_mbtiles_fails():
@@ -151,7 +156,9 @@ def test_extract_mbtiles_fails():
         testpath = tt.path
         testmbtiles = os.path.join(os.path.dirname(__file__), 'fixtures/bad.mbtiles')
         runner = CliRunner()
+
         result = runner.invoke(cli, [
             'streammbtiles', testmbtiles, testpath, '-z', '16', '-x', '-s',
             '{z}-{x}-{y}-mbtiles.tif', '--co', 'compress=lzw'])
-        assert result.exit_code == -1
+
+        assert result.exc_info[0] == sqlite3.OperationalError
