@@ -50,6 +50,7 @@ untiler streamdir [OPTIONS] INPUT_DIR OUTPUT_DIR
 -w, --workers INTEGER        Number of workers in the processing pool
                            [default=4]
 -x, --no-fill                Don't fill in with lower zooms
+-r, --tile-resolution       Size of input tiles for eg 256, 512 etc
 --help                       Show this message and exit.
 ```
 
